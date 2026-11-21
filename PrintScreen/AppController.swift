@@ -45,8 +45,25 @@ final class AppController {
     // MARK: 静止画
 
     private func captureArea() async {
-        guard let selection = await AreaSelector.select() else { return }
-        await capture(screen: selection.screen, rect: selection.displayLocalRect)
+        switch await AreaSelector.selectCaptureTarget() {
+        case .area(let selection):
+            await capture(screen: selection.screen, rect: selection.displayLocalRect)
+        case .window(let selection):
+            await captureWindow(selection)
+        case nil:
+            break
+        }
+    }
+
+    private func captureWindow(_ selection: WindowSelection) async {
+        do {
+            let date = Date()
+            let image = try await ScreenCapturer.capture(window: selection)
+            NSSound(named: "Grab")?.play()
+            EditorWindowController.open(image: image, pixelScale: selection.pixelScale, captureDate: date)
+        } catch {
+            showError(error)
+        }
     }
 
     private func captureFullScreen() async {

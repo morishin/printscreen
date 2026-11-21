@@ -14,9 +14,21 @@ enum ImageEncoder {
         case .webp: return try encodeWebP(image, quality: quality)
         case .png: return try encodeImageIO(image, type: .png, properties: [:])
         case .jpeg:
-            return try encodeImageIO(image, type: .jpeg,
+            return try encodeImageIO(flattenedOnWhite(image) ?? image, type: .jpeg,
                                      properties: [kCGImageDestinationLossyCompressionQuality: quality / 100])
         }
+    }
+
+    /// JPEG は透過できないので、透明な部分を白で埋める。
+    private static func flattenedOnWhite(_ image: CGImage) -> CGImage? {
+        let rect = CGRect(x: 0, y: 0, width: image.width, height: image.height)
+        guard let ctx = CGContext(data: nil, width: image.width, height: image.height, bitsPerComponent: 8,
+                                  bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                  bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return nil }
+        ctx.setFillColor(.white)
+        ctx.fill(rect)
+        ctx.draw(image, in: rect)
+        return ctx.makeImage()
     }
 
     private static func encodeImageIO(_ image: CGImage, type: UTType, properties: [CFString: Any]) throws -> Data {
