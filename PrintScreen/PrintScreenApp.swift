@@ -24,4 +24,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             AppController.shared.start()
         }
     }
+
+    /// 起動中にアプリをもう一度開いたら設定を出す。アイコンを隠しているときの入口になる。
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        StatusItemController.shared.openSettings()
+        return false
+    }
 }

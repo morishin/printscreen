@@ -1,12 +1,15 @@
 import AppKit
+import ServiceManagement
 import SwiftUI
 
 struct SettingsView: View {
     var body: some View {
         TabView {
             Tab("一般", systemImage: "gearshape") { GeneralSettingsView() }
-            Tab("録画", systemImage: "record.circle") { RecordingSettingsView() }
+            Tab("画像", systemImage: "photo") { ImageSettingsView() }
+            Tab("動画", systemImage: "video") { VideoSettingsView() }
             Tab("ショートカット", systemImage: "command") { ShortcutSettingsView() }
+            Tab("About", systemImage: "info.circle") { AboutView() }
         }
         // Form は高さを主張しないので、指定しないとウインドウが潰れて中身が見えなくなる
         .frame(width: 520, height: 500)
@@ -15,9 +18,57 @@ struct SettingsView: View {
 
 private struct GeneralSettingsView: View {
     @Bindable private var settings = AppSettings.shared
+    @State private var loginItemStatus = SMAppService.mainApp.status
+    @State private var loginItemError: String?
+
+    private var launchAtLoginBinding: Binding<Bool> {
+        Binding {
+            loginItemStatus == .enabled || loginItemStatus == .requiresApproval
+        } set: { enabled in
+            do {
+                if enabled {
+                    try SMAppService.mainApp.register()
+                } else {
+                    try SMAppService.mainApp.unregister()
+                }
+                loginItemError = nil
+            } catch {
+                loginItemError = error.localizedDescription
+            }
+            loginItemStatus = SMAppService.mainApp.status
+        }
+    }
 
     var body: some View {
         Form {
+            Section("起動と表示") {
+                Toggle("ログイン時に起動する", isOn: launchAtLoginBinding)
+                if loginItemStatus == .requiresApproval {
+                    HStack {
+                        Text("システム設定でログイン項目を許可してください。")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Button("システム設定を開く") { SMAppService.openSystemSettingsLoginItems() }
+                            .controlSize(.small)
+                    }
+                }
+                if let loginItemError {
+                    Text(loginItemError)
+                        .font(.callout)
+                        .foregroundStyle(.red)
+                }
+                Toggle("メニューバーに表示する", isOn: $settings.showMenuBarIcon)
+                if !settings.showMenuBarIcon {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("非表示の間も、ショートカットは使えます。録画中は停止ボタンを表示します。設定を開くには、Finder などからアプリをもう一度開いてください。")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                        Button("PrintScreen を終了") { NSApp.terminate(nil) }
+                            .controlSize(.small)
+                    }
+                }
+            }
             Section("保存先") {
                 LabeledContent("フォルダ") {
                     HStack {
@@ -39,22 +90,9 @@ private struct GeneralSettingsView: View {
                     NSWorkspace.shared.open(settings.saveDirectory)
                 }
             }
-            Section("画像") {
-                Picker("形式", selection: $settings.imageFormat) {
-                    ForEach(ImageFormat.allCases) { Text($0.label).tag($0) }
-                }
-                if settings.imageFormat != .png {
-                    LabeledContent("品質") {
-                        HStack {
-                            Slider(value: $settings.imageQuality, in: 50...100, step: 5)
-                            Text("\(Int(settings.imageQuality))").monospacedDigit().frame(width: 32)
-                        }
-                    }
-                }
-                Toggle("保存時にクリップボードにもコピーする", isOn: $settings.copyToClipboardOnSave)
-            }
         }
         .formStyle(.grouped)
+        .onAppear { loginItemStatus = SMAppService.mainApp.status }
     }
 
     private static func directory(_ d: FileManager.SearchPathDirectory) -> URL {
@@ -75,7 +113,30 @@ private struct GeneralSettingsView: View {
     }
 }
 
-private struct RecordingSettingsView: View {
+private struct ImageSettingsView: View {
+    @Bindable private var settings = AppSettings.shared
+
+    var body: some View {
+        Form {
+            Section("画像") {
+                Picker("形式", selection: $settings.imageFormat) {
+                    ForEach(ImageFormat.allCases) { Text($0.label).tag($0) }
+                }
+                if settings.imageFormat != .png {
+                    LabeledContent("品質") {
+                        HStack {
+                            Slider(value: $settings.imageQuality, in: 50...100, step: 5)
+                            Text("\(Int(settings.imageQuality))").monospacedDigit().frame(width: 32)
+                        }
+                    }
+                }
+            }
+        }
+        .formStyle(.grouped)
+    }
+}
+
+private struct VideoSettingsView: View {
     @Bindable private var settings = AppSettings.shared
     @State private var ffmpegAvailable = FFmpeg.executableURL != nil
     @State private var accessibilityTrusted = AXIsProcessTrusted()

@@ -66,7 +66,6 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
                                             baseName: OutputFiles.baseName(prefix: "スクリーンショット", date: captureDate),
                                             ext: settings.imageFormat.fileExtension)
             try data.write(to: url)
-            if settings.copyToClipboardOnSave { Clipboard.copy(image) }
             model.isSaved = true
             close()
             Toast.show("保存しました", detail: url.lastPathComponent, fileURL: url)

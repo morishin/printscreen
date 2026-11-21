@@ -64,8 +64,12 @@ final class AppSettings {
     var showKeystrokes: Bool {
         didSet { defaults.set(showKeystrokes, forKey: "showKeystrokes") }
     }
-    var copyToClipboardOnSave: Bool {
-        didSet { defaults.set(copyToClipboardOnSave, forKey: "copyToClipboardOnSave") }
+    /// メニューバーにアイコンを出す。オフでも録画中は停止ボタンとして表示する。
+    var showMenuBarIcon: Bool {
+        didSet {
+            defaults.set(showMenuBarIcon, forKey: "showMenuBarIcon")
+            StatusItemController.shared.update(isRecording: AppController.shared.isRecording)
+        }
     }
 
     /// 録画の保存後に Finder で自動表示する（トーストは出さない）。
@@ -89,7 +93,8 @@ final class AppSettings {
         videoFormat = VideoFormat(rawValue: defaults.string(forKey: "videoFormat") ?? "") ?? .webm
         showClicks = defaults.object(forKey: "showClicks") as? Bool ?? true
         showKeystrokes = defaults.object(forKey: "showKeystrokes") as? Bool ?? false
-        copyToClipboardOnSave = defaults.object(forKey: "copyToClipboardOnSave") as? Bool ?? true
+        showMenuBarIcon = defaults.object(forKey: "showMenuBarIcon") as? Bool ?? true
+        defaults.removeObject(forKey: "copyToClipboardOnSave") // 廃止した設定
         revealRecordingInFinder = defaults.object(forKey: "revealRecordingInFinder") as? Bool ?? false
     }
 }

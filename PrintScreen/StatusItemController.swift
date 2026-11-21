@@ -21,6 +21,8 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     func update(isRecording: Bool) {
         guard let item = statusItem, let button = item.button else { return }
+        // 非表示の設定でも、録画を止められるように録画中は出す
+        item.isVisible = isRecording || AppSettings.shared.showMenuBarIcon
         // menu があるとクリックでメニューが開き、nil だと action が呼ばれる
         item.menu = isRecording ? nil : menu
         let symbol = isRecording ? "stop.circle.fill" : "camera.viewfinder"
@@ -81,7 +83,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         NSWorkspace.shared.open(AppSettings.shared.saveDirectory)
     }
 
-    @objc private func openSettings() {
+    @objc func openSettings() {
         if settingsWindow == nil {
             let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView()))
             window.title = "PrintScreen 設定"
