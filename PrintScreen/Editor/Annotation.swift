@@ -1,3 +1,4 @@
+import Accelerate
 import AppKit
 
 enum EditorTool: String, CaseIterable, Identifiable {
@@ -61,6 +62,45 @@ enum StrokeWidth: Int, CaseIterable, Identifiable {
     }
 }
 
+enum LineStyle: String, CaseIterable, Identifiable {
+    case solid, dashed
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .solid: "実線"
+        case .dashed: "破線"
+        }
+    }
+}
+
+/// 書き込みに使える色。macOS のシステムカラーをもとに、黒と白を加えたもの。
+struct PaletteColor: Identifiable {
+    let name: String
+    let color: NSColor
+    var id: String { name }
+
+    private init(_ name: String, _ hex: UInt32) {
+        self.name = name
+        color = NSColor(srgbRed: CGFloat(hex >> 16 & 0xFF) / 255,
+                        green: CGFloat(hex >> 8 & 0xFF) / 255,
+                        blue: CGFloat(hex & 0xFF) / 255,
+                        alpha: 1)
+    }
+
+    static let all: [PaletteColor] = [
+        PaletteColor("赤", 0xFF5257),
+        PaletteColor("オレンジ", 0xF7821B),
+        PaletteColor("黄", 0xFFC600),
+        PaletteColor("緑", 0x62BA46),
+        PaletteColor("青", 0x007AFF),
+        PaletteColor("紫", 0xA550A7),
+        PaletteColor("ピンク", 0xF74F9E),
+        PaletteColor("グレー", 0x8C8C8C),
+        PaletteColor("黒", 0x1D1D1F),
+        PaletteColor("白", 0xFFFFFF),
+    ]
+}
+
 /// 図形。座標は画像のピクセル座標（左上原点）。
 struct Annotation: Identifiable {
     enum Shape {
@@ -78,6 +118,9 @@ struct Annotation: Identifiable {
     var shape: Shape
     var color: NSColor
     var lineWidth: CGFloat
+    var isDashed = false
+    /// 文字に縁取りをつけるか。
+    var textOutlined = true
 
     func offsetBy(dx: CGFloat, dy: CGFloat) -> Annotation {
         var copy = self
@@ -104,9 +147,15 @@ struct Annotation: Identifiable {
         [
             .font: NSFont.systemFont(ofSize: fontSize, weight: .bold),
             .foregroundColor: color,
-            .strokeColor: color.isLight ? NSColor.black : NSColor.white,
-            .strokeWidth: -2.5,
         ]
+    }
+
+    /// 縁取りだけを描く属性。文字の下に太い線として重ねる。
+    static func textOutlineAttributes(fontSize: CGFloat, color: NSColor) -> [NSAttributedString.Key: Any] {
+        var attributes = textAttributes(fontSize: fontSize, color: color)
+        attributes[.strokeColor] = color.isLight ? NSColor.black : NSColor.white
+        attributes[.strokeWidth] = 18 // フォントサイズに対する % で、正の値は線のみ
+        return attributes
     }
 
     /// 選択判定と選択枠の表示に使う範囲。
@@ -155,7 +204,7 @@ struct Annotation: Identifiable {
 extension NSColor {
     var isLight: Bool {
         guard let c = usingColorSpace(.sRGB) else { return false }
-        return 0.299 * c.redComponent + 0.587 * c.greenComponent + 0.114 * c.blueComponent > 0.6
+        return 0.299 * c.redComponent + 0.587 * c.greenComponent + 0.114 * c.blueComponent > 0.7
     }
 }
 
@@ -178,6 +227,10 @@ enum AnnotationRenderer {
         ctx.setLineWidth(annotation.lineWidth)
         ctx.setLineCap(.round)
         ctx.setLineJoin(.round)
+        if annotation.isDashed {
+            // 線端が丸いので、隙間は線幅より広くする
+            ctx.setLineDash(phase: 0, lengths: [annotation.lineWidth * 2.2, annotation.lineWidth * 2.4])
+        }
 
         switch annotation.shape {
         case .line(let a, let b):
@@ -186,27 +239,47 @@ enum AnnotationRenderer {
             ctx.strokePath()
 
         case .arrow(let a, let b):
-            let angle = atan2(b.y - a.y, b.x - a.x)
             let length = hypot(b.x - a.x, b.y - a.y)
-            let headLength = min(max(annotation.lineWidth * 4.5, 14), length * 0.6)
-            let headWidth = headLength * 0.65
-            // 軸は矢じりの根元まで
-            let base = CGPoint(x: b.x - cos(angle) * headLength * 0.8, y: b.y - sin(angle) * headLength * 0.8)
-            ctx.move(to: a)
-            ctx.addLine(to: base)
-            ctx.strokePath()
-            let left = CGPoint(x: b.x - cos(angle) * headLength + sin(angle) * headWidth,
-                               y: b.y - sin(angle) * headLength - cos(angle) * headWidth)
-            let right = CGPoint(x: b.x - cos(angle) * headLength - sin(angle) * headWidth,
-                                y: b.y - sin(angle) * headLength + cos(angle) * headWidth)
+            guard length > 0 else { return }
+            let ux = (b.x - a.x) / length, uy = (b.y - a.y) / length
+            /// 先端から軸に沿って along、軸の横に side だけ離れた点。
+            func point(_ along: CGFloat, _ side: CGFloat) -> CGPoint {
+                CGPoint(x: b.x - ux * along - uy * side, y: b.y - uy * along + ux * side)
+            }
+            let w = annotation.lineWidth
+            let headLength = min(max(w * 5.5, 16), length * 0.6)
+            let headHalfWidth = headLength * 0.5
+            // 返しより先端側をくびれさせて、矢じりを後ろに流す
+            let neck = headLength * 0.72
+            let neckHalfWidth = max(w * 0.6, 1.2)
+            let tailHalfWidth = w * 0.1
+
+            if annotation.isDashed {
+                ctx.move(to: a)
+                ctx.addLine(to: point(neck, 0))
+                ctx.strokePath()
+                ctx.setLineDash(phase: 0, lengths: [])
+            }
             ctx.move(to: b)
-            ctx.addLine(to: left)
-            ctx.addLine(to: right)
+            ctx.addLine(to: point(headLength, headHalfWidth))
+            ctx.addLine(to: point(neck, neckHalfWidth))
+            if !annotation.isDashed {
+                // 根元に向かって細くなる軸
+                ctx.addLine(to: point(length, tailHalfWidth))
+                ctx.addLine(to: point(length, -tailHalfWidth))
+            }
+            ctx.addLine(to: point(neck, -neckHalfWidth))
+            ctx.addLine(to: point(headLength, -headHalfWidth))
             ctx.closePath()
-            ctx.fillPath()
+            // 細い線を重ねて角を少し丸める
+            ctx.setLineWidth(max(w * 0.2, 1))
+            ctx.drawPath(using: .fillStroke)
 
         case .rect(let r):
-            ctx.stroke(r.standardized)
+            let rect = r.standardized
+            let radius = min(annotation.lineWidth * 2, min(rect.width, rect.height) / 2)
+            ctx.addPath(CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil))
+            ctx.strokePath()
 
         case .ellipse(let r):
             ctx.strokeEllipse(in: r.standardized)
@@ -234,23 +307,53 @@ enum AnnotationRenderer {
             }
             ctx.strokePath()
 
-        case .text(let origin, let string, _):
+        case .text(let origin, let string, let fontSize):
             let previous = NSGraphicsContext.current
             NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: true)
+            if annotation.textOutlined {
+                let outline = Annotation.textOutlineAttributes(fontSize: fontSize, color: annotation.color)
+                NSAttributedString(string: string, attributes: outline).draw(at: origin)
+            }
             NSAttributedString(string: string, attributes: annotation.textAttributes).draw(at: origin)
             NSGraphicsContext.current = previous
         }
     }
 
-    /// モザイク用に、画像全体をピクセル化したものを作る。
+    /// モザイク用に、画像全体を「ブロックごとの平均色」で塗ったものを作る。
     static func makeMosaicImage(from image: CGImage, blockSize: CGFloat) -> CGImage? {
-        let ci = CIImage(cgImage: image)
-        guard let filter = CIFilter(name: "CIPixellate") else { return nil }
-        filter.setValue(ci.clampedToExtent(), forKey: kCIInputImageKey)
-        filter.setValue(blockSize, forKey: kCIInputScaleKey)
-        filter.setValue(CIVector(x: 0, y: 0), forKey: kCIInputCenterKey)
-        guard let output = filter.outputImage?.cropped(to: ci.extent) else { return nil }
-        return CIContext().createCGImage(output, from: ci.extent)
+        let width = image.width, height = image.height
+        let block = max(1, Int(blockSize.rounded()))
+        guard let ctx = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8,
+                                  bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue),
+              let data = ctx.data?.assumingMemoryBound(to: UInt8.self) else { return nil }
+        ctx.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        let bytesPerRow = ctx.bytesPerRow
+
+        // 箱型フィルタをかけると、各点の値が周囲のブロック分の平均になる。カーネルは奇数のみ。
+        let averaged = UnsafeMutablePointer<UInt8>.allocate(capacity: bytesPerRow * height)
+        defer { averaged.deallocate() }
+        var source = vImage_Buffer(data: data, height: vImagePixelCount(height),
+                                   width: vImagePixelCount(width), rowBytes: bytesPerRow)
+        var destination = vImage_Buffer(data: averaged, height: vImagePixelCount(height),
+                                        width: vImagePixelCount(width), rowBytes: bytesPerRow)
+        let kernel = UInt32(block | 1)
+        guard vImageBoxConvolve_ARGB8888(&source, &destination, nil, 0, 0, kernel, kernel, nil,
+                                         vImage_Flags(kvImageEdgeExtend)) == kvImageNoError else { return nil }
+
+        // ブロックの中心の平均値で、ブロック全体を塗る
+        for blockY in stride(from: 0, to: height, by: block) {
+            let maxY = min(blockY + block, height)
+            let centerY = (blockY + maxY) / 2
+            for blockX in stride(from: 0, to: width, by: block) {
+                let maxX = min(blockX + block, width)
+                let center = averaged + centerY * bytesPerRow + (blockX + maxX) / 2 * 4
+                for y in blockY..<maxY {
+                    memset_pattern4(data + y * bytesPerRow + blockX * 4, center, (maxX - blockX) * 4)
+                }
+            }
+        }
+        return ctx.makeImage()
     }
 
     /// 書き出し用に、注釈を焼き込んだ画像を作る。

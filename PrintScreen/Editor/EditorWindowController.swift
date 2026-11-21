@@ -1,6 +1,20 @@
 import AppKit
 import SwiftUI
 
+/// ⌘W を破棄として受け取るウインドウ。
+private final class EditorWindow: NSWindow {
+    var onCommandW: (() -> Void)?
+
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        let modifiers = event.modifierFlags.intersection([.command, .shift, .option, .control])
+        if modifiers == .command, event.charactersIgnoringModifiers?.lowercased() == "w" {
+            onCommandW?()
+            return true
+        }
+        return super.performKeyEquivalent(with: event)
+    }
+}
+
 /// 撮影した画像を編集するウインドウ。
 final class EditorWindowController: NSWindowController, NSWindowDelegate {
     private static var openControllers: Set<EditorWindowController> = []
@@ -19,20 +33,21 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
     private init(image: CGImage, pixelScale: CGFloat, captureDate: Date) {
         self.model = EditorModel(image: image, pixelScale: pixelScale)
         self.captureDate = captureDate
-        let window = NSWindow(contentRect: .zero, styleMask: [.titled, .closable, .resizable, .miniaturizable],
-                              backing: .buffered, defer: false)
-        window.title = "スクリーンショット"
-        window.subtitle = "\(image.width) × \(image.height)"
+        let window = EditorWindow(contentRect: .zero, styleMask: [.titled, .closable, .resizable, .miniaturizable],
+                                  backing: .buffered, defer: false)
+        window.title = "スクリーンショット" // Mission Control などで使う。タイトルバーには出さない
+        window.titleVisibility = .hidden
         window.toolbarStyle = .unified
         window.isReleasedWhenClosed = false
         window.tabbingMode = .disallowed
         super.init(window: window)
         window.delegate = self
+        window.onCommandW = { [weak self] in self?.requestDiscard() }
 
         let view = EditorView(model: model,
                               onCopy: { [weak self] in self?.copy() },
                               onSave: { [weak self] in self?.save() },
-                              onDiscard: { [weak self] in self?.discard() })
+                              onDiscard: { [weak self] in self?.requestDiscard() })
         window.contentViewController = NSHostingController(rootView: view)
         window.setContentSize(initialContentSize(for: image, pixelScale: pixelScale))
         window.center()
@@ -45,18 +60,21 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
         let visible = (NSScreen.main ?? NSScreen.screens[0]).visibleFrame.size
         let maxSize = CGSize(width: visible.width * 0.85, height: visible.height * 0.85 - 60)
         let scale = min(1, maxSize.width / (pointSize.width + 24), maxSize.height / (pointSize.height + 24))
-        return CGSize(width: max(720, pointSize.width * scale + 24), height: max(320, pointSize.height * scale + 24))
+        return CGSize(width: max(EditorView.minimumWidth, pointSize.width * scale + 24),
+                      height: max(320, pointSize.height * scale + 24))
     }
 
     // MARK: 操作
 
     private func copy() {
+        model.finishTextEditing?()
         guard let image = model.renderedImage() else { return }
         Clipboard.copy(image)
         Toast.show("クリップボードにコピーしました")
     }
 
     private func save() {
+        model.finishTextEditing?()
         guard let image = model.renderedImage() else { return }
         let settings = AppSettings.shared
         do {
@@ -80,6 +98,20 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
         close()
     }
 
+    /// ⌘W と破棄ボタン。書き込みがあるときは誤操作で失わないよう確認する。
+    private func requestDiscard() {
+        model.finishTextEditing?()
+        if model.annotations.isEmpty {
+            discard()
+        } else {
+            window?.performClose(nil)
+        }
+    }
+
+    override func cancelOperation(_ sender: Any?) {
+        model.handleEscape()
+    }
+
     // MARK: NSWindowDelegate
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
@@ -88,13 +120,13 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
         alert.messageText = "保存せずに閉じますか？"
         alert.informativeText = "撮影した画像は保存されません。"
         alert.addButton(withTitle: "保存")
-        alert.addButton(withTitle: "キャンセル")
         alert.addButton(withTitle: "保存しない")
-        alert.buttons[2].hasDestructiveAction = true
+        alert.addButton(withTitle: "キャンセル")
+        alert.buttons[1].hasDestructiveAction = true
         alert.beginSheetModal(for: sender) { [weak self] response in
             switch response {
             case .alertFirstButtonReturn: self?.save()
-            case .alertThirdButtonReturn: self?.discard()
+            case .alertSecondButtonReturn: self?.discard()
             default: break
             }
         }

@@ -7,6 +7,7 @@ struct AnnotationCanvas: NSViewRepresentable {
     func makeNSView(context: Context) -> AnnotationCanvasView {
         let view = AnnotationCanvasView(model: model)
         model.canvasNeedsDisplay = { [weak view] in view?.needsDisplay = true }
+        model.finishTextEditing = { [weak view] in view?.commitText() }
         return view
     }
 
@@ -40,6 +41,12 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
     override var isFlipped: Bool { true }
     override var acceptsFirstResponder: Bool { true }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        // 開いた直後から Esc やツールのキーを受け取る
+        window?.makeFirstResponder(self)
+    }
 
     // MARK: 座標変換
 
@@ -103,10 +110,7 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
         ctx.restoreGState()
 
         // 選択枠
-        if let id = model.selectedID, let a = model.annotations.first(where: { $0.id == id }) {
-            let b = a.bounds.standardized
-            let viewRect = CGRect(origin: toView(b.origin), size: CGSize(width: b.width * viewScale, height: b.height * viewScale))
-                .insetBy(dx: -5, dy: -5)
+        if let viewRect = selectionViewRect {
             ctx.saveGState()
             ctx.setStrokeColor(NSColor.controlAccentColor.cgColor)
             ctx.setLineWidth(1.5)
@@ -114,6 +118,44 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
             ctx.stroke(viewRect)
             ctx.restoreGState()
         }
+        drawTextOutlineButton()
+    }
+
+    private var selectedAnnotation: Annotation? {
+        guard let id = model.selectedID else { return nil }
+        return model.annotations.first { $0.id == id }
+    }
+
+    /// 選択枠（ビュー座標）。
+    private var selectionViewRect: CGRect? {
+        guard let a = selectedAnnotation else { return nil }
+        let b = a.bounds.standardized
+        return CGRect(origin: toView(b.origin), size: CGSize(width: b.width * viewScale, height: b.height * viewScale))
+            .insetBy(dx: -5, dy: -5)
+    }
+
+    /// 選択中の文字の上に出す、縁取り切り替えボタンの位置。上に余裕がなければ下に出す。
+    private var textOutlineButtonRect: CGRect? {
+        guard let a = selectedAnnotation, case .text = a.shape, let frame = selectionViewRect else { return nil }
+        let size: CGFloat = 24
+        let y = frame.minY - size - 6 >= bounds.minY + 2 ? frame.minY - size - 6 : frame.maxY + 6
+        return CGRect(x: frame.midX - size / 2, y: y, width: size, height: size)
+    }
+
+    private func drawTextOutlineButton() {
+        guard let rect = textOutlineButtonRect, let a = selectedAnnotation else { return }
+        let circle = NSBezierPath(ovalIn: rect.insetBy(dx: 1, dy: 1))
+        (a.textOutlined ? NSColor.controlAccentColor : NSColor.white).setFill()
+        circle.fill()
+        NSColor.controlAccentColor.setStroke()
+        circle.lineWidth = 1.5
+        circle.stroke()
+        let label = NSAttributedString(string: "a", attributes: [
+            .font: NSFont.systemFont(ofSize: 15, weight: .bold),
+            .foregroundColor: a.textOutlined ? NSColor.white : NSColor.controlAccentColor,
+        ])
+        let size = label.size()
+        label.draw(at: CGPoint(x: rect.midX - size.width / 2, y: rect.midY - size.height / 2 - 1))
     }
 
     override func resetCursorRects() {
@@ -137,6 +179,12 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
         let viewPoint = convert(event.locationInWindow, from: nil)
         let p = toImage(viewPoint)
 
+        if let rect = textOutlineButtonRect, rect.contains(viewPoint) {
+            model.toggleSelectedTextOutline()
+            window?.makeFirstResponder(self)
+            return
+        }
+
         if textField != nil {
             commitText()
             if model.tool == .text { return }
@@ -159,8 +207,10 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
             // 既存の文字をクリックしたら編集
             if let hit = model.annotation(at: p), case .text = hit.shape {
                 beginEditingText(hit)
+                return
             } else if imageRect.contains(viewPoint) {
                 beginNewText(at: p)
+                return // 下でフォーカスを戻すと入力欄が閉じてしまう
             }
         default:
             guard imageRect.contains(viewPoint) else { return }
@@ -215,7 +265,7 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
         case 51, 117: // delete, forward delete
             model.deleteSelection()
         case 53: // esc
-            model.selectedID = nil
+            model.handleEscape()
         default:
             // 修飾キーなしの 1 文字でツールを切り替える
             if event.modifierFlags.intersection([.command, .control, .option]).isEmpty,
@@ -242,7 +292,8 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
         case .pen: .pen([a, b])
         case .select, .text: .line(a, b)
         }
-        var annotation = Annotation(shape: shape, color: model.color, lineWidth: model.currentLineWidth)
+        var annotation = Annotation(shape: shape, color: model.color, lineWidth: model.currentLineWidth,
+                                    isDashed: model.lineStyle == .dashed)
         if let id { annotation.id = id }
         return annotation
     }
@@ -289,6 +340,7 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
     }
 
     private func showTextField(string: String, fontSize: CGFloat, color: NSColor) {
+        model.selectedID = nil
         let field = NSTextField(string: string)
         field.isBordered = false
         field.drawsBackground = false
@@ -303,6 +355,7 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
         field.placeholderString = "文字を入力"
         addSubview(field)
         textField = field
+        model.isEditingText = true
         textFontSize = fontSize
         repositionTextField()
         window?.makeFirstResponder(field)
@@ -334,6 +387,7 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
         }
         if selector == #selector(NSResponder.cancelOperation(_:)) {
             commitText()
+            model.tool = .select
             return true
         }
         return false
@@ -343,9 +397,10 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
         commitText()
     }
 
-    private func commitText() {
+    func commitText() {
         guard let field = textField else { return }
         textField = nil
+        model.isEditingText = false
         let string = field.stringValue
         field.delegate = nil
         field.removeFromSuperview()
@@ -359,10 +414,15 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
                 model.update(id) {
                     $0.shape = .text(origin: origin, string: string, fontSize: fontSize)
                 }
+                model.selectedID = id
             }
         } else if !string.isEmpty {
-            model.add(Annotation(shape: .text(origin: editingTextOrigin, string: string, fontSize: textFontSize),
-                                 color: model.color, lineWidth: model.currentLineWidth))
+            let annotation = Annotation(shape: .text(origin: editingTextOrigin, string: string, fontSize: textFontSize),
+                                        color: model.color, lineWidth: model.currentLineWidth,
+                                        textOutlined: model.textOutlined)
+            model.add(annotation)
+            // 確定したら選択して、縁取りのボタンを出す
+            model.selectedID = annotation.id
         }
         editingTextID = nil
         window?.makeFirstResponder(self)

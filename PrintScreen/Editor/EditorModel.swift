@@ -13,9 +13,20 @@ final class EditorModel {
     var tool: EditorTool = .arrow {
         didSet { if tool != .select { selectedID = nil } }
     }
-    var color: NSColor = .systemRed {
+    var color: NSColor = PaletteColor.all[0].color {
         didSet { applyToSelection { $0.color = color } }
     }
+    var lineStyle: LineStyle = .solid {
+        didSet {
+            let dashed = lineStyle == .dashed
+            applyToSelection { a in
+                if case .text = a.shape { return }
+                a.isDashed = dashed
+            }
+        }
+    }
+    /// 次に入力する文字に縁取りをつけるか。最後に切り替えた状態を引き継ぐ。
+    @ObservationIgnored var textOutlined = true
     var strokeWidth: StrokeWidth = .medium {
         didSet {
             let width = lineWidth(for: strokeWidth)
@@ -31,18 +42,20 @@ final class EditorModel {
     /// 保存済みかどうか（閉じるときの確認用）
     var isSaved = false
 
-    @ObservationIgnored var canvasNeedsDisplay: (() -> Void)?
-    @ObservationIgnored private var undoStack: [[Annotation]] = []
-    @ObservationIgnored private var redoStack: [[Annotation]] = []
+    /// 文字を入力中かどうか。入力中は ⌘Z や ⌘C を入力欄に渡す。
+    var isEditingText = false
 
-    static let palette: [NSColor] = [
-        .systemRed, .systemOrange, .systemYellow, .systemGreen, .systemBlue, .systemPurple, .black, .white,
-    ]
+    @ObservationIgnored var canvasNeedsDisplay: (() -> Void)?
+    /// 入力中の文字を確定する。
+    @ObservationIgnored var finishTextEditing: (() -> Void)?
+    // canUndo / canRedo でボタンの有効状態を更新するので、監視の対象にする
+    private var undoStack: [[Annotation]] = []
+    private var redoStack: [[Annotation]] = []
 
     init(image: CGImage, pixelScale: CGFloat) {
         self.image = image
         self.pixelScale = pixelScale
-        self.mosaicImage = AnnotationRenderer.makeMosaicImage(from: image, blockSize: 10 * pixelScale)
+        self.mosaicImage = AnnotationRenderer.makeMosaicImage(from: image, blockSize: 7 * pixelScale)
     }
 
     var imageSize: CGSize { CGSize(width: image.width, height: image.height) }
@@ -85,6 +98,26 @@ final class EditorModel {
         checkpoint()
         annotations.removeAll { $0.id == id }
         selectedID = nil
+    }
+
+    /// Esc。選択ツールに切り替え、すでに選択ツールなら選択を解除する。
+    func handleEscape() {
+        if tool != .select {
+            tool = .select
+        } else {
+            selectedID = nil
+        }
+    }
+
+    /// 選択中の文字の縁取りを切り替える。
+    func toggleSelectedTextOutline() {
+        guard let id = selectedID,
+              let current = annotations.first(where: { $0.id == id }),
+              case .text = current.shape else { return }
+        let outlined = !current.textOutlined
+        checkpoint()
+        update(id) { $0.textOutlined = outlined }
+        textOutlined = outlined
     }
 
     func annotation(at point: CGPoint) -> Annotation? {
