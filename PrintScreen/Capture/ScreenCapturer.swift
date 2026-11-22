@@ -7,8 +7,8 @@ enum ScreenCapturer {
         case windowNotFound
         var errorDescription: String? {
             switch self {
-            case .displayNotFound: "撮影するディスプレイが見つかりません"
-            case .windowNotFound: "撮影するウインドウが見つかりません"
+            case .displayNotFound: String(localized: "Display not found")
+            case .windowNotFound: String(localized: "Window not found")
             }
         }
     }

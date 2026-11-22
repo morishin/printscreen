@@ -6,7 +6,7 @@ import libwebp
 enum ImageEncoder {
     enum EncodeError: LocalizedError {
         case failed
-        var errorDescription: String? { "画像の書き出しに失敗しました" }
+        var errorDescription: String? { String(localized: "Failed to export the image") }
     }
 
     static func encode(_ image: CGImage, format: ImageFormat, quality: Double) throws -> Data {

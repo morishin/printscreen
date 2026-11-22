@@ -73,9 +73,9 @@ enum HotkeyAction: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .captureFullScreen: "画面全体を撮影"
-        case .captureArea: "範囲を選択して撮影"
-        case .recordArea: "範囲を選択して録画 / 録画を停止"
+        case .captureFullScreen: String(localized: "Capture Full Screen")
+        case .captureArea: String(localized: "Capture Area")
+        case .recordArea: String(localized: "Record Area / Stop Recording")
         }
     }
 

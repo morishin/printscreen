@@ -139,12 +139,12 @@ final class AppController {
         let format = settings.effectiveVideoFormat
         try OutputFiles.ensureDirectory(settings.saveDirectory)
         let dest = OutputFiles.uniqueURL(directory: settings.saveDirectory,
-                                         baseName: OutputFiles.baseName(prefix: "画面収録", date: date),
+                                         baseName: OutputFiles.baseName(prefix: String(localized: "Screen Recording"), date: date),
                                          ext: format.fileExtension)
         defer { try? FileManager.default.removeItem(at: tempURL) }
         switch format {
         case .webm:
-            Toast.show("WebM に変換しています…", duration: 600)
+            Toast.show(String(localized: "Converting to WebM…"), duration: 600)
             try await FFmpeg.convertToWebM(input: tempURL, output: dest)
         case .mp4:
             try FileManager.default.moveItem(at: tempURL, to: dest)
@@ -155,7 +155,7 @@ final class AppController {
             Toast.hide()
             NSWorkspace.shared.activateFileViewerSelecting([dest])
         } else {
-            Toast.show("保存しました", detail: dest.lastPathComponent, fileURL: dest)
+            Toast.show(String(localized: "Saved"), detail: dest.lastPathComponent, fileURL: dest)
         }
     }
 
@@ -174,10 +174,10 @@ final class AppController {
         if CGPreflightScreenCaptureAccess() { return true }
         CGRequestScreenCaptureAccess()
         let alert = NSAlert()
-        alert.messageText = "画面収録の許可が必要です"
-        alert.informativeText = "システム設定 › プライバシーとセキュリティ › 画面収録とシステムオーディオ録音 で PrintScreen を許可してください。許可したあと、アプリの再起動が必要な場合があります。"
-        alert.addButton(withTitle: "システム設定を開く")
-        alert.addButton(withTitle: "閉じる")
+        alert.messageText = String(localized: "Screen Recording Permission Required")
+        alert.informativeText = String(localized: "Allow PrintScreen in System Settings › Privacy & Security › Screen & System Audio Recording. You may need to restart the app afterward.")
+        alert.addButton(withTitle: String(localized: "Open System Settings"))
+        alert.addButton(withTitle: String(localized: "Close"))
         NSApp.activate(ignoringOtherApps: true)
         if alert.runModal() == .alertFirstButtonReturn {
             NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)

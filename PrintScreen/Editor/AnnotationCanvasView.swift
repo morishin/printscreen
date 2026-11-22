@@ -352,7 +352,7 @@ final class AnnotationCanvasView: NSView, NSTextFieldDelegate {
         field.font = NSFont.systemFont(ofSize: fontSize * viewScale, weight: .bold)
         field.textColor = color
         field.delegate = self
-        field.placeholderString = "文字を入力"
+        field.placeholderString = String(localized: "Enter text")
         addSubview(field)
         textField = field
         model.isEditingText = true

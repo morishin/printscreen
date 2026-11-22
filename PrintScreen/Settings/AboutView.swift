@@ -18,7 +18,7 @@ struct AboutView: View {
             VStack(spacing: 4) {
                 Text("PrintScreen")
                     .font(.title.bold())
-                Text("バージョン \(version)")
+                Text("Version \(version)")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
@@ -28,7 +28,7 @@ struct AboutView: View {
             Divider()
 
             VStack(spacing: 12) {
-                LabeledContent("作者") {
+                LabeledContent("Author") {
                     Link("morishin", destination: URL(string: "https://github.com/morishin")!)
                 }
                 .frame(maxWidth: 240)
@@ -64,13 +64,13 @@ struct AboutView: View {
         case .idle:
             checkButton
         case .checking:
-            ProgressView("確認しています…")
+            ProgressView("Checking…")
                 .controlSize(.small)
         case .upToDate:
             HStack(spacing: 6) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.green)
-                Text("最新版です")
+                Text("Up to date")
                     .foregroundStyle(.secondary)
                 checkButton
                     .buttonStyle(.link)
@@ -78,14 +78,14 @@ struct AboutView: View {
             .font(.callout)
         case .available(let version, let url):
             Link(destination: url) {
-                Label("バージョン \(version) があります", systemImage: "arrow.down.circle.fill")
+                Label("Version \(version) Available", systemImage: "arrow.down.circle.fill")
             }
             .buttonStyle(.borderedProminent)
         case .unavailable:
             HStack(spacing: 6) {
-                Text("最新版を確認できませんでした")
+                Text("Couldn't check for updates")
                     .foregroundStyle(.secondary)
-                Button("再試行") {
+                Button("Retry") {
                     Task { await checker.check() }
                 }
                 .buttonStyle(.link)
@@ -95,7 +95,7 @@ struct AboutView: View {
     }
 
     private var checkButton: some View {
-        Button("アップデートを確認") {
+        Button("Check for Updates") {
             Task { await checker.check() }
         }
     }

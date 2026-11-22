@@ -35,7 +35,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
         self.captureDate = captureDate
         let window = EditorWindow(contentRect: .zero, styleMask: [.titled, .closable, .resizable, .miniaturizable],
                                   backing: .buffered, defer: false)
-        window.title = "スクリーンショット" // Mission Control などで使う。タイトルバーには出さない
+        window.title = String(localized: "Screenshot") // Mission Control などで使う。タイトルバーには出さない
         window.titleVisibility = .hidden
         window.toolbarStyle = .unified
         window.isReleasedWhenClosed = false
@@ -70,7 +70,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
         model.finishTextEditing?()
         guard let image = model.renderedImage() else { return }
         Clipboard.copy(image)
-        Toast.show("クリップボードにコピーしました")
+        Toast.show(String(localized: "Copied to Clipboard"))
     }
 
     private func save() {
@@ -81,12 +81,12 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
             let data = try ImageEncoder.encode(image, format: settings.imageFormat, quality: settings.imageQuality)
             try OutputFiles.ensureDirectory(settings.saveDirectory)
             let url = OutputFiles.uniqueURL(directory: settings.saveDirectory,
-                                            baseName: OutputFiles.baseName(prefix: "スクリーンショット", date: captureDate),
+                                            baseName: OutputFiles.baseName(prefix: String(localized: "Screenshot"), date: captureDate),
                                             ext: settings.imageFormat.fileExtension)
             try data.write(to: url)
             model.isSaved = true
             close()
-            Toast.show("保存しました", detail: url.lastPathComponent, fileURL: url)
+            Toast.show(String(localized: "Saved"), detail: url.lastPathComponent, fileURL: url)
         } catch {
             let alert = NSAlert(error: error)
             alert.beginSheetModal(for: window!)
@@ -117,11 +117,11 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         if model.isSaved { return true }
         let alert = NSAlert()
-        alert.messageText = "保存せずに閉じますか？"
-        alert.informativeText = "撮影した画像は保存されません。"
-        alert.addButton(withTitle: "保存")
-        alert.addButton(withTitle: "保存しない")
-        alert.addButton(withTitle: "キャンセル")
+        alert.messageText = String(localized: "Close without saving?")
+        alert.informativeText = String(localized: "The captured image won't be saved.")
+        alert.addButton(withTitle: String(localized: "Save"))
+        alert.addButton(withTitle: String(localized: "Don't Save"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
         alert.buttons[1].hasDestructiveAction = true
         alert.beginSheetModal(for: sender) { [weak self] response in
             switch response {

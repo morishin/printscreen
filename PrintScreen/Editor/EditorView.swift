@@ -8,7 +8,12 @@ struct EditorView: View {
     var onDiscard: () -> Void
 
     /// ツールバーの項目がオーバーフローメニューに入らない幅。
-    static let minimumWidth: CGFloat = 960
+    /// 保存ボタンの文字の長さは言語で変わるので、その分を足す。
+    static let minimumWidth: CGFloat = {
+        let label = String(localized: "Save  ⌘S") as NSString
+        let width = label.size(withAttributes: [.font: NSFont.systemFont(ofSize: 13, weight: .medium)]).width
+        return ceil(940 + width)
+    }()
 
     var body: some View {
         AnnotationCanvas(model: model)
@@ -16,10 +21,10 @@ struct EditorView: View {
             .background(Color(nsColor: .underPageBackgroundColor))
             .toolbar {
                 ToolbarItem(placement: .navigation) {
-                    Picker("ツール", selection: $model.tool) {
+                    Picker("Tool", selection: $model.tool) {
                         ForEach(EditorTool.allCases) { tool in
                             Label(tool.title, systemImage: tool.symbol)
-                                .help("\(tool.title)（\(tool.key.uppercased())）")
+                                .help(Text(verbatim: "\(tool.title) (\(tool.key.uppercased()))"))
                                 .tag(tool)
                         }
                     }
@@ -30,7 +35,7 @@ struct EditorView: View {
                     ColorPaletteButton(selection: $model.color)
                 }
                 ToolbarItem {
-                    Picker("太さ", selection: $model.strokeWidth) {
+                    Picker("Width", selection: $model.strokeWidth) {
                         ForEach(StrokeWidth.allCases) { w in
                             Image(nsImage: LineIcon.width(w))
                                 .accessibilityLabel(w.title)
@@ -38,10 +43,10 @@ struct EditorView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    .help("線の太さ・文字の大きさ")
+                    .help("Line Width / Text Size")
                 }
                 ToolbarItem {
-                    Picker("線の種類", selection: $model.lineStyle) {
+                    Picker("Line Style", selection: $model.lineStyle) {
                         ForEach(LineStyle.allCases) { style in
                             Image(nsImage: LineIcon.style(style))
                                 .accessibilityLabel(style.title)
@@ -49,32 +54,32 @@ struct EditorView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    .help("実線・破線")
+                    .help("Solid / Dashed")
                 }
                 ToolbarItemGroup {
-                    Button("取り消す", systemImage: "arrow.uturn.backward") { model.undo() }
+                    Button("Undo", systemImage: "arrow.uturn.backward") { model.undo() }
                         .keyboardShortcut("z", modifiers: .command)
                         .disabled(!model.canUndo || model.isEditingText)
-                        .help("取り消す（⌘Z）")
-                    Button("やり直す", systemImage: "arrow.uturn.forward") { model.redo() }
+                        .help("Undo (⌘Z)")
+                    Button("Redo", systemImage: "arrow.uturn.forward") { model.redo() }
                         .keyboardShortcut("z", modifiers: [.command, .shift])
                         .disabled(!model.canRedo || model.isEditingText)
-                        .help("やり直す（⇧⌘Z）")
+                        .help("Redo (⇧⌘Z)")
                 }
                 ToolbarSpacer(.fixed)
                 ToolbarItemGroup {
-                    Button("破棄", systemImage: "trash") { onDiscard() }
-                        .help("保存せずに閉じる（⌘W）")
-                    Button("コピー", systemImage: "doc.on.doc") { onCopy() }
+                    Button("Discard", systemImage: "trash") { onDiscard() }
+                        .help("Close Without Saving (⌘W)")
+                    Button("Copy", systemImage: "doc.on.doc") { onCopy() }
                         // 文字の入力中は ⌘C を入力欄に渡す
                         .keyboardShortcut(model.isEditingText ? nil : KeyboardShortcut("c", modifiers: .command))
-                        .help("クリップボードにコピー（⌘C）")
+                        .help("Copy to Clipboard (⌘C)")
                     Button { onSave() } label: {
-                        Text("保存  ⌘S")
+                        Text("Save  ⌘S")
                     }
                         .keyboardShortcut("s", modifiers: .command)
                         .buttonStyle(.borderedProminent)
-                        .help("保存して閉じる（⌘S）")
+                        .help("Save and Close (⌘S)")
                 }
             }
     }
@@ -95,8 +100,8 @@ private struct ColorPaletteButton: View {
                 .overlay(Circle().strokeBorder(.secondary.opacity(0.6), lineWidth: 1))
                 .frame(width: 16, height: 16)
         }
-        .help("色")
-        .accessibilityLabel("色")
+        .help("Color")
+        .accessibilityLabel("Color")
         .popover(isPresented: $isPresented, arrowEdge: .bottom) {
             ColorPaletteGrid(selection: $selection) { isPresented = false }
         }

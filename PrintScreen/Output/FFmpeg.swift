@@ -20,8 +20,8 @@ enum FFmpeg {
         case failed(String)
         var errorDescription: String? {
             switch self {
-            case .notInstalled: "ffmpeg が見つかりません"
-            case .failed(let log): "ffmpeg での変換に失敗しました\n\(log)"
+            case .notInstalled: String(localized: "ffmpeg not found")
+            case .failed(let log): String(localized: "ffmpeg conversion failed\n\(log)")
             }
         }
     }

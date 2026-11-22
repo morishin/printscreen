@@ -5,10 +5,10 @@ import SwiftUI
 struct SettingsView: View {
     var body: some View {
         TabView {
-            Tab("一般", systemImage: "gearshape") { GeneralSettingsView() }
-            Tab("画像", systemImage: "photo") { ImageSettingsView() }
-            Tab("動画", systemImage: "video") { VideoSettingsView() }
-            Tab("ショートカット", systemImage: "command") { ShortcutSettingsView() }
+            Tab("General", systemImage: "gearshape") { GeneralSettingsView() }
+            Tab("Image", systemImage: "photo") { ImageSettingsView() }
+            Tab("Video", systemImage: "video") { VideoSettingsView() }
+            Tab("Shortcuts", systemImage: "command") { ShortcutSettingsView() }
             Tab("About", systemImage: "info.circle") { AboutView() }
         }
         // Form は高さを主張しないので、指定しないとウインドウが潰れて中身が見えなくなる
@@ -41,15 +41,15 @@ private struct GeneralSettingsView: View {
 
     var body: some View {
         Form {
-            Section("起動と表示") {
-                Toggle("ログイン時に起動する", isOn: launchAtLoginBinding)
+            Section("Startup & Appearance") {
+                Toggle("Launch at Login", isOn: launchAtLoginBinding)
                 if loginItemStatus == .requiresApproval {
                     HStack {
-                        Text("システム設定でログイン項目を許可してください。")
+                        Text("Allow this login item in System Settings.")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Button("システム設定を開く") { SMAppService.openSystemSettingsLoginItems() }
+                        Button("Open System Settings") { SMAppService.openSystemSettingsLoginItems() }
                             .controlSize(.small)
                     }
                 }
@@ -58,35 +58,35 @@ private struct GeneralSettingsView: View {
                         .font(.callout)
                         .foregroundStyle(.red)
                 }
-                Toggle("メニューバーに表示する", isOn: $settings.showMenuBarIcon)
+                Toggle("Show in Menu Bar", isOn: $settings.showMenuBarIcon)
                 if !settings.showMenuBarIcon {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("非表示の間も、ショートカットは使えます。録画中は停止ボタンを表示します。設定を開くには、Finder などからアプリをもう一度開いてください。")
+                        Text("Shortcuts keep working while hidden, and a stop button appears during recording. To open Settings, open the app again from Finder.")
                             .font(.callout)
                             .foregroundStyle(.secondary)
-                        Button("PrintScreen を終了") { NSApp.terminate(nil) }
+                        Button("Quit PrintScreen") { NSApp.terminate(nil) }
                             .controlSize(.small)
                     }
                 }
             }
-            Section("保存先") {
-                LabeledContent("フォルダ") {
+            Section("Save Location") {
+                LabeledContent("Folder") {
                     HStack {
                         Text(settings.saveDirectory.path(percentEncoded: false)
                             .replacingOccurrences(of: NSHomeDirectory(), with: "~"))
                             .lineLimit(1)
                             .truncationMode(.middle)
-                        Menu("変更") {
-                            Button("デスクトップ") { settings.saveDirectory = Self.directory(.desktopDirectory) }
-                            Button("ダウンロード") { settings.saveDirectory = Self.directory(.downloadsDirectory) }
-                            Button("ピクチャ") { settings.saveDirectory = Self.directory(.picturesDirectory) }
+                        Menu("Change") {
+                            Button("Desktop") { settings.saveDirectory = Self.directory(.desktopDirectory) }
+                            Button("Downloads") { settings.saveDirectory = Self.directory(.downloadsDirectory) }
+                            Button("Pictures") { settings.saveDirectory = Self.directory(.picturesDirectory) }
                             Divider()
-                            Button("その他…") { chooseFolder() }
+                            Button("Other…") { chooseFolder() }
                         }
                         .fixedSize()
                     }
                 }
-                Button("Finder で開く") {
+                Button("Open in Finder") {
                     NSWorkspace.shared.open(settings.saveDirectory)
                 }
             }
@@ -105,7 +105,7 @@ private struct GeneralSettingsView: View {
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
         panel.directoryURL = settings.saveDirectory
-        panel.prompt = "選択"
+        panel.prompt = String(localized: "Choose")
         NSApp.activate()
         if panel.runModal() == .OK, let url = panel.url {
             settings.saveDirectory = url
@@ -118,12 +118,12 @@ private struct ImageSettingsView: View {
 
     var body: some View {
         Form {
-            Section("画像") {
-                Picker("形式", selection: $settings.imageFormat) {
+            Section("Image") {
+                Picker("Format", selection: $settings.imageFormat) {
                     ForEach(ImageFormat.allCases) { Text($0.label).tag($0) }
                 }
                 if settings.imageFormat != .png {
-                    LabeledContent("品質") {
+                    LabeledContent("Quality") {
                         HStack {
                             Slider(value: $settings.imageQuality, in: 50...100, step: 5)
                             Text("\(Int(settings.imageQuality))").monospacedDigit().frame(width: 32)
@@ -154,52 +154,52 @@ private struct VideoSettingsView: View {
     var body: some View {
         Form {
             Section {
-                Picker("形式", selection: videoFormatBinding) {
+                Picker("Format", selection: videoFormatBinding) {
                     ForEach(VideoFormat.allCases) { format in
-                        Text(format == .webm && !ffmpegAvailable ? "\(format.label)（ffmpeg が必要）" : format.label)
+                        Text(format == .webm && !ffmpegAvailable ? String(localized: "\(format.label) (requires ffmpeg)") : format.label)
                             .tag(format)
                             .disabled(format == .webm && !ffmpegAvailable)
                     }
                 }
                 if !ffmpegAvailable {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("WebM で保存するには ffmpeg が必要です。ターミナルで次のコマンドを実行してインストールすると選べるようになります。いまは MP4 で保存します。")
+                        Text("Saving as WebM requires ffmpeg. Run the following command in Terminal to install it and enable this option. Recordings are saved as MP4 for now.")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         HStack {
                             Text("brew install ffmpeg")
                                 .font(.callout.monospaced())
                                 .textSelection(.enabled)
-                            Button("コピー") {
+                            Button("Copy") {
                                 NSPasteboard.general.clearContents()
                                 NSPasteboard.general.setString("brew install ffmpeg", forType: .string)
                             }
                             .controlSize(.small)
                             Spacer()
-                            Button("再確認") { ffmpegAvailable = FFmpeg.executableURL != nil }
+                            Button("Check Again") { ffmpegAvailable = FFmpeg.executableURL != nil }
                                 .controlSize(.small)
                         }
                     }
                 }
             } header: {
-                Text("動画")
+                Text("Video")
             }
-            Section("録画の終了後") {
-                Toggle("保存したファイルを Finder で表示する", isOn: $settings.revealRecordingInFinder)
+            Section("After Recording") {
+                Toggle("Show Saved File in Finder", isOn: $settings.revealRecordingInFinder)
             }
-            Section("表示") {
-                Toggle("マウスのクリックを表示する", isOn: $settings.showClicks)
-                Toggle("押したキーを表示する", isOn: $settings.showKeystrokes)
+            Section("Overlays") {
+                Toggle("Show Mouse Clicks", isOn: $settings.showClicks)
+                Toggle("Show Pressed Keys", isOn: $settings.showKeystrokes)
                 if settings.showKeystrokes && !accessibilityTrusted {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("キーを表示するには「アクセシビリティ」の許可が必要です。")
+                        Text("Showing keys requires Accessibility permission.")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         HStack {
-                            Button("システム設定を開く") {
+                            Button("Open System Settings") {
                                 KeystrokeMonitor.requestAccessibilityPermission()
                             }
-                            Button("再確認") { accessibilityTrusted = AXIsProcessTrusted() }
+                            Button("Check Again") { accessibilityTrusted = AXIsProcessTrusted() }
                         }
                         .controlSize(.small)
                     }
@@ -225,7 +225,7 @@ private struct ShortcutSettingsView: View {
                         VStack(alignment: .trailing, spacing: 2) {
                             ShortcutRecorder(action: action)
                             if hotkeys.failedActions.contains(action) {
-                                Text("ほかで使われていて登録できません")
+                                Text("Already in use by another app")
                                     .font(.caption)
                                     .foregroundStyle(.red)
                             }
@@ -233,11 +233,11 @@ private struct ShortcutSettingsView: View {
                     }
                 }
             } footer: {
-                Text("⌘⇧3 / ⌘⇧4 / ⌘⇧5 を使うには、システム設定 › キーボード › キーボードショートカット › スクリーンショット で macOS 標準のショートカットをオフにしてください。")
+                Text("To use ⌘⇧3 / ⌘⇧4 / ⌘⇧5, turn off the macOS shortcuts in System Settings › Keyboard › Keyboard Shortcuts › Screenshots.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
-            Button("キーボードショートカットの設定を開く") {
+            Button("Open Keyboard Shortcuts Settings") {
                 NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension")!)
             }
         }
@@ -261,7 +261,7 @@ private struct ShortcutRecorder: View {
             Button {
                 isRecording ? stopRecording() : startRecording()
             } label: {
-                Text(isRecording ? "キーを押してください…" : (hotkeys.combos[action]?.displayString ?? "なし"))
+                Text(isRecording ? String(localized: "Press keys…") : (hotkeys.combos[action]?.displayString ?? String(localized: "None")))
                     .frame(minWidth: 140)
             }
             Button {
@@ -270,7 +270,7 @@ private struct ShortcutRecorder: View {
                 Image(systemName: "xmark.circle.fill")
             }
             .buttonStyle(.borderless)
-            .help("ショートカットを外す")
+            .help("Remove Shortcut")
             .disabled(hotkeys.combos[action] == nil)
             Button {
                 hotkeys.setCombo(action.defaultCombo, for: action)
@@ -278,7 +278,7 @@ private struct ShortcutRecorder: View {
                 Image(systemName: "arrow.counterclockwise")
             }
             .buttonStyle(.borderless)
-            .help("初期値（\(action.defaultCombo.displayString)）に戻す")
+            .help("Reset to default (\(action.defaultCombo.displayString))")
         }
         .onDisappear { stopRecording() }
     }

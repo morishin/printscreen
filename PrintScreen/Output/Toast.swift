@@ -64,7 +64,7 @@ private struct ToastView: View {
             }
             if let fileURL {
                 Spacer(minLength: 8)
-                Button("Finder で表示") {
+                Button("Show in Finder") {
                     NSWorkspace.shared.activateFileViewerSelecting([fileURL])
                     dismiss()
                 }

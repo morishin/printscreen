@@ -26,7 +26,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         // menu があるとクリックでメニューが開き、nil だと action が呼ばれる
         item.menu = isRecording ? nil : menu
         let symbol = isRecording ? "stop.circle.fill" : "camera.viewfinder"
-        let title = isRecording ? "録画を停止" : "PrintScreen"
+        let title = isRecording ? String(localized: "Stop Recording") : "PrintScreen"
         // テンプレート画像にして、メニューバーの文字色（元のアイコンと同じ色）で描かせる
         let image = NSImage(systemSymbolName: symbol, accessibilityDescription: title)
         image?.isTemplate = true
@@ -43,14 +43,14 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
-        addActionItem("範囲を選択して撮影", .captureArea)
-        addActionItem("画面全体を撮影", .captureFullScreen)
-        addActionItem("範囲を選択して録画", .recordArea)
+        addActionItem(String(localized: "Capture Area"), .captureArea)
+        addActionItem(String(localized: "Capture Full Screen"), .captureFullScreen)
+        addActionItem(String(localized: "Record Area"), .recordArea)
         menu.addItem(.separator())
-        addItem("保存先を開く", #selector(openSaveDirectory))
-        addItem("設定…", #selector(openSettings), key: ",")
+        addItem(String(localized: "Open Save Folder"), #selector(openSaveDirectory))
+        addItem(String(localized: "Settings…"), #selector(openSettings), key: ",")
         menu.addItem(.separator())
-        addItem("PrintScreen を終了", #selector(quit), key: "q")
+        addItem(String(localized: "Quit PrintScreen"), #selector(quit), key: "q")
     }
 
     private func addActionItem(_ title: String, _ action: HotkeyAction) {
@@ -86,7 +86,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     @objc func openSettings() {
         if settingsWindow == nil {
             let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView()))
-            window.title = "PrintScreen 設定"
+            window.title = String(localized: "PrintScreen Settings")
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
             window.center()

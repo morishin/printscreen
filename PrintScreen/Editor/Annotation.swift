@@ -8,15 +8,15 @@ enum EditorTool: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .select: "選択"
-        case .arrow: "矢印"
-        case .line: "線"
-        case .rect: "枠"
-        case .ellipse: "楕円"
-        case .fill: "塗りつぶし"
-        case .text: "文字"
-        case .pen: "ペン"
-        case .mosaic: "モザイク"
+        case .select: String(localized: "Select")
+        case .arrow: String(localized: "Arrow")
+        case .line: String(localized: "Line")
+        case .rect: String(localized: "Rectangle")
+        case .ellipse: String(localized: "Ellipse")
+        case .fill: String(localized: "Fill")
+        case .text: String(localized: "Text")
+        case .pen: String(localized: "Pen")
+        case .mosaic: String(localized: "Mosaic")
         }
     }
 
@@ -28,7 +28,7 @@ enum EditorTool: String, CaseIterable, Identifiable {
         case .rect: "rectangle"
         case .ellipse: "circle"
         case .fill: "rectangle.fill"
-        case .text: "textformat"
+        case .text: "a.square" // textformat は中国語環境で別の字形になる
         case .pen: "scribble"
         case .mosaic: "checkerboard.rectangle"
         }
@@ -55,9 +55,9 @@ enum StrokeWidth: Int, CaseIterable, Identifiable {
     var id: Int { rawValue }
     var title: String {
         switch self {
-        case .thin: "細"
-        case .medium: "中"
-        case .thick: "太"
+        case .thin: String(localized: "Thin")
+        case .medium: String(localized: "Medium")
+        case .thick: String(localized: "Thick")
         }
     }
 }
@@ -67,8 +67,8 @@ enum LineStyle: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .solid: "実線"
-        case .dashed: "破線"
+        case .solid: String(localized: "Solid")
+        case .dashed: String(localized: "Dashed")
         }
     }
 }
@@ -88,16 +88,16 @@ struct PaletteColor: Identifiable {
     }
 
     static let all: [PaletteColor] = [
-        PaletteColor("赤", 0xFF5257),
-        PaletteColor("オレンジ", 0xF7821B),
-        PaletteColor("黄", 0xFFC600),
-        PaletteColor("緑", 0x62BA46),
-        PaletteColor("青", 0x007AFF),
-        PaletteColor("紫", 0xA550A7),
-        PaletteColor("ピンク", 0xF74F9E),
-        PaletteColor("グレー", 0x8C8C8C),
-        PaletteColor("黒", 0x1D1D1F),
-        PaletteColor("白", 0xFFFFFF),
+        PaletteColor(String(localized: "Red"), 0xFF5257),
+        PaletteColor(String(localized: "Orange"), 0xF7821B),
+        PaletteColor(String(localized: "Yellow"), 0xFFC600),
+        PaletteColor(String(localized: "Green"), 0x62BA46),
+        PaletteColor(String(localized: "Blue"), 0x007AFF),
+        PaletteColor(String(localized: "Purple"), 0xA550A7),
+        PaletteColor(String(localized: "Pink"), 0xF74F9E),
+        PaletteColor(String(localized: "Gray"), 0x8C8C8C),
+        PaletteColor(String(localized: "Black"), 0x1D1D1F),
+        PaletteColor(String(localized: "White"), 0xFFFFFF),
     ]
 }
 
