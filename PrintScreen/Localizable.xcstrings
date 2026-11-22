@@ -4757,6 +4757,52 @@
         }
       }
     },
+    "Third-Party Notices": {
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サードパーティのライセンス"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第三方声明"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第三方聲明"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "타사 고지"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avisos de terceros"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hinweise zu Drittanbietern"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mentions de tiers"
+          }
+        }
+      }
+    },
     "To use ⌘⇧3 / ⌘⇧4 / ⌘⇧5, turn off the macOS shortcuts in System Settings › Keyboard › Keyboard Shortcuts › Screenshots.": {
       "localizations": {
         "de": {

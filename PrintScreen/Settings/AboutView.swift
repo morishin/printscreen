@@ -60,6 +60,12 @@ struct AboutView: View {
                     }
                 }
                 .buttonStyle(.bordered)
+
+                if let notices = Bundle.main.url(forResource: "ThirdPartyNotices", withExtension: "txt") {
+                    Button("Third-Party Notices") { NSWorkspace.shared.open(notices) }
+                        .buttonStyle(.link)
+                        .font(.callout)
+                }
             }
 
             Spacer()
