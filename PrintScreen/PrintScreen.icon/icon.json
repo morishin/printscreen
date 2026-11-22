@@ -1,0 +1,39 @@
+{
+  "fill" : {
+    "solid" : "srgb:0.78824,0.75686,0.68235,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "glass" : false,
+          "image-name" : "legend.svg",
+          "name" : "legend"
+        },
+        {
+          "glass" : false,
+          "image-name" : "dish.svg",
+          "name" : "dish"
+        },
+        {
+          "glass" : false,
+          "image-name" : "body.svg",
+          "name" : "body"
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : [
+      "macOS"
+    ]
+  }
+}

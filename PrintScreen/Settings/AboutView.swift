@@ -9,9 +9,20 @@ struct AboutView: View {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
     }
 
+    /// `.icon` 形式だと `applicationIconImage` がプレースホルダーになることがあるので、
+    /// 同梱の `.icns` を直接読む。
+    private static var appIconImage: NSImage {
+        if let name = Bundle.main.infoDictionary?["CFBundleIconFile"] as? String,
+           let url = Bundle.main.url(forResource: name, withExtension: "icns"),
+           let image = NSImage(contentsOf: url) {
+            return image
+        }
+        return NSApp.applicationIconImage
+    }
+
     var body: some View {
         VStack(spacing: 16) {
-            Image(nsImage: NSApp.applicationIconImage)
+            Image(nsImage: Self.appIconImage)
                 .resizable()
                 .frame(width: 96, height: 96)
 
