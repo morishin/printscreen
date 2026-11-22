@@ -8,9 +8,7 @@ A menu bar screenshot and screen recording app for macOS. Capture, annotate righ
 
 [printscreen.morishin.me](https://printscreen.morishin.me)
 
-<p align="center">
-  <img src="docs/images/editor.webp" width="820" alt="PrintScreen editor with arrows, shapes, text, and mosaic on a screenshot">
-</p>
+https://github.com/user-attachments/assets/7cddf61a-dd6d-4e95-b5dd-469156826ebf
 
 ## Features
 
@@ -23,11 +21,11 @@ A menu bar screenshot and screen recording app for macOS. Capture, annotate righ
 
 <table>
   <tr>
-    <td width="62%"><img src="docs/images/capture.webp" alt="Selecting a screen area with PrintScreen"></td>
+    <td width="62%"><img src="docs/images/editor.webp" alt="PrintScreen editor with a box, arrow, text, and mosaic on a screenshot"></td>
     <td width="38%"><img src="docs/images/settings.webp" alt="PrintScreen video settings"></td>
   </tr>
   <tr>
-    <td align="center">Select an area with ⌘⇧4</td>
+    <td align="center">Annotate right after capture</td>
     <td align="center">Video settings</td>
   </tr>
 </table>
