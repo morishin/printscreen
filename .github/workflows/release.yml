@@ -41,6 +41,12 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain
 
+      # Xcode 27 rewrites the project format to one that Xcode 26 cannot open.
+      - name: Normalize project format
+        run: |
+          sed -i '' -E 's/objectVersion = [0-9]+;/objectVersion = 77;/' PrintScreen.xcodeproj/project.pbxproj
+          grep -q 'objectVersion = 77;' PrintScreen.xcodeproj/project.pbxproj
+
       # Set the app version to match the tag (e.g. v1.2 → 1.2) so the in-app
       # update check (CFBundleShortVersionString) works correctly.
       - name: Archive
