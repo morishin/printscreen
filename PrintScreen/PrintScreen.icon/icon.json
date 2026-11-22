@@ -11,7 +11,7 @@
           "name" : "legend"
         },
         {
-          "glass" : false,
+          "glass" : true,
           "image-name" : "dish.svg",
           "name" : "dish"
         },
