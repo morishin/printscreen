@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PrintScreen — macOS 標準のスクショを置き換えるアプリ</title>
+  <meta name="description" content="macOS 標準のスクリーンキャプチャの代わりに。撮影後すぐに文字や矢印、枠を入れられて、WebP / WebM で自動的に軽く保存できます。">
+  <meta name="author" content="morishin">
+  <meta name="theme-color" content="#efeadd">
+  <link rel="canonical" href="https://printscreen.morishin.me/ja/">
+  <link rel="alternate" hreflang="en" href="https://printscreen.morishin.me/">
+  <link rel="alternate" hreflang="ja" href="https://printscreen.morishin.me/ja/">
+  <link rel="alternate" hreflang="x-default" href="https://printscreen.morishin.me/">
+  <link rel="icon" type="image/webp" href="/assets/icon.webp">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+JP:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PrintScreen">
+  <meta property="og:title" content="PrintScreen — macOS 標準のスクショを置き換えるアプリ">
+  <meta property="og:description" content="macOS 標準のスクリーンキャプチャの代わりに。撮影後すぐに文字や矢印、枠を入れられて、WebP / WebM で自動的に軽く保存できます。">
+  <meta property="og:url" content="https://printscreen.morishin.me/ja/">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:image" content="https://printscreen.morishin.me/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="PrintScreen">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PrintScreen — macOS 標準のスクショを置き換えるアプリ">
+  <meta name="twitter:description" content="macOS 標準のスクリーンキャプチャの代わりに。撮影後すぐに文字や矢印、枠を入れられて、WebP / WebM で自動的に軽く保存できます。">
+  <meta name="twitter:image" content="https://printscreen.morishin.me/assets/og.png">
+  <meta name="twitter:creator" content="@morishin127">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "PrintScreen", "operatingSystem": "macOS 26", "applicationCategory": "UtilitiesApplication", "description": "macOS 標準のスクリーンキャプチャの代わりに。撮影後すぐに文字や矢印、枠を入れられて、WebP / WebM で自動的に軽く保存できます。", "url": "https://printscreen.morishin.me/ja/", "downloadUrl": "https://github.com/morishin/printscreen/releases/latest", "image": "https://printscreen.morishin.me/assets/icon.webp", "author": {"@type": "Person", "name": "morishin", "url": "https://github.com/morishin"}, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "isAccessibleForFree": true, "inLanguage": ["en", "ja"]}</script>
+  <link rel="stylesheet" href="/assets/style.css">
+  <script src="/assets/main.js" defer></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <a class="brand" href="/ja/"><img src="/assets/icon.webp" width="32" height="32" alt="">PrintScreen</a>
+    <nav class="topnav" aria-label="Language">
+      <a href="/" hreflang="en">EN</a>
+      <a href="/ja/" class="active" hreflang="ja">JA</a>
+    </nav>
+  </header>
+</div>
+
+<main class="wrap">
+  <section class="hero">
+    <img class="hero-icon" src="/assets/icon.webp" width="512" height="512" alt="PrintScreen app icon">
+    <h1>macOS&nbsp;のスクショを、<wbr>もっと便利に</h1>
+    <p class="lede">標準のスクリーンキャプチャの代わりに。撮ったらすぐ書き込めて、ファイルは自動で軽くなります。</p>
+    <div class="actions">
+      <a class="btn primary" href="https://github.com/morishin/printscreen/releases/latest">Mac 版をダウンロード</a>
+      <a class="btn secondary" href="https://github.com/morishin/printscreen">GitHub</a>
+    </div>
+    <p class="note">無料・オープンソース。macOS 26 以降に対応。</p>
+  </section>
+
+  <section class="block">
+    <div class="section-head">
+      <p class="num">01</p>
+      <h2>macOS&nbsp;標準の<wbr>キャプチャを<wbr>置き換える</h2>
+      <p>スクリーンショットも画面録画も、いつものショートカットで。</p>
+      <div class="keys"><span><kbd>⌘⇧3</kbd>画面全体</span><span><kbd>⌘⇧4</kbd>範囲・ウインドウ</span><span><kbd>⌘⇧5</kbd>録画</span></div>
+    </div>
+    <div class="media">
+      <video autoplay muted loop playsinline preload="metadata" width="1280" height="800" poster="/assets/shots/ja/demo-poster.webp" aria-label="⌘⇧4 で範囲を選び、枠、矢印、文字、モザイクを入れて保存するデモ">
+        <source src="/assets/shots/ja/demo.webm" type="video/webm">
+        <source src="/assets/shots/ja/demo.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="subfeature">
+      <img src="/assets/shots/ja/overlay.webp" width="1280" height="680" alt="ボタン上のクリックの波紋と、右下に表示された押したキー" loading="lazy">
+      <div>
+        <h3>クリックとキー入力も見える</h3>
+        <p>録画中のクリックを波紋で、押したキーを右下に表示できます。操作の手順がそのまま伝わります。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="section-head">
+      <p class="num">02</p>
+      <h2>文字、矢印、枠を<wbr>すぐ入れられる</h2>
+      <p>撮影するとすぐに編集画面が開きます。伝えたい場所を示し、隠したい情報にはモザイクをかけられます。</p>
+    </div>
+    <img class="shot" src="/assets/shots/ja/editor.webp" width="1800" height="1319" alt="スクリーンショットに文字、矢印、枠、モザイクを書き込んだ PrintScreen の編集画面" loading="lazy">
+  </section>
+
+  <section class="block">
+    <div class="section-head">
+      <p class="num">03</p>
+      <h2>WebP&nbsp;/&nbsp;WebM&nbsp;で<wbr>自動的に軽く</h2>
+      <p>スクリーンショットは WebP、録画は WebM で保存。変換の手間はいりません。<br>PNG、JPEG、MP4、MOV も選べます。</p>
+    </div>
+    <div class="compare">
+      <div class="card">
+        <h3>スクリーンショット</h3>
+        <p class="saving"><strong>92%</strong><span>削減</span></p>
+        <div class="bar-row"><span>PNG</span><span class="track"><span class="fill" style="width:100%"></span></span><b>1403 KB</b></div>
+        <div class="bar-row after"><span>WebP</span><span class="track"><span class="fill" style="width:8.5%"></span></span><b>119 KB</b></div>
+      </div>
+      <div class="card">
+        <h3>画面録画</h3>
+        <p class="saving"><strong>92%</strong><span>削減</span></p>
+        <div class="bar-row"><span>H.264</span><span class="track"><span class="fill" style="width:100%"></span></span><b>2765 KB</b></div>
+        <div class="bar-row after"><span>WebM</span><span class="track"><span class="fill" style="width:8.0%"></span></span><b>221 KB</b></div>
+      </div>
+    </div>
+    <p class="fine">このページのサンプル画像とデモ動画での実測値です。削減率は内容によって変わります。WebM には ffmpeg が必要です（<code>brew install ffmpeg</code>）。</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-row">
+    <span>© 2026 morishin</span>
+    <div class="footer-links">
+      <a href="https://github.com/morishin/printscreen">GitHub</a>
+      <a href="https://github.com/morishin/printscreen/blob/main/LICENSE">GPL v3</a>
+      <a href="/privacy.html">プライバシー</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
