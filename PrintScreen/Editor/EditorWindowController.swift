@@ -66,11 +66,27 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
 
     // MARK: 操作
 
+    /// PNG は画像データのまま、ほかの形式は保存形式のファイルとしてコピーする。
+    /// 画像データとしての WebP は多くのアプリが読まず PNG で貼られてしまうため。
     private func copy() {
         model.finishTextEditing?()
         guard let image = model.renderedImage() else { return }
-        Clipboard.copy(image)
-        Toast.show(String(localized: "Copied to Clipboard"))
+        let settings = AppSettings.shared
+        guard settings.imageFormat != .png else {
+            Clipboard.copy(image)
+            Toast.show(String(localized: "Copied to Clipboard"))
+            return
+        }
+        do {
+            let data = try ImageEncoder.encode(image, format: settings.imageFormat, quality: settings.imageQuality)
+            let name = OutputFiles.baseName(prefix: String(localized: "Screenshot"), date: captureDate)
+            let url = try Clipboard.temporaryFileURL(name: name, ext: settings.imageFormat.fileExtension)
+            try data.write(to: url)
+            Clipboard.copyFile(url)
+            Toast.show(String(localized: "Copied to Clipboard"), detail: url.lastPathComponent)
+        } catch {
+            NSAlert(error: error).beginSheetModal(for: window!)
+        }
     }
 
     private func save() {
@@ -146,6 +162,14 @@ enum Clipboard {
         pb.clearContents()
         pb.setData(png, forType: .png)
         if let tiff = rep.tiffRepresentation { pb.setData(tiff, forType: .tiff) }
+    }
+
+    /// コピー用の一時ファイルの場所。貼り付け先が後から読めるよう、次のコピーまで残す。
+    static func temporaryFileURL(name: String, ext: String) throws -> URL {
+        let directory = FileManager.default.temporaryDirectory.appending(path: "Clipboard", directoryHint: .isDirectory)
+        try? FileManager.default.removeItem(at: directory)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory.appending(path: "\(name).\(ext)")
     }
 
     static func copyFile(_ url: URL) {
