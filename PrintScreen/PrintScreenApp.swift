@@ -9,6 +9,13 @@ struct PrintScreenApp: App {
         Settings {
             EmptyView()
         }
+        .commands {
+            // 標準の「設定…」(⌘,) は空の Settings シーンを開いてしまうので、自前の設定ウインドウに差し替える
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") { StatusItemController.shared.openSettings() }
+                    .keyboardShortcut(",", modifiers: .command)
+            }
+        }
     }
 }
 
