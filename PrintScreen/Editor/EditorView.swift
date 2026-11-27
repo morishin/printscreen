@@ -12,7 +12,7 @@ struct EditorView: View {
     static let minimumWidth: CGFloat = {
         let label = String(localized: "Save  ⌘S") as NSString
         let width = label.size(withAttributes: [.font: NSFont.systemFont(ofSize: 13, weight: .medium)]).width
-        return ceil(940 + width)
+        return ceil(1020 + width)
     }()
 
     var body: some View {
@@ -70,6 +70,12 @@ struct EditorView: View {
                 ToolbarItemGroup {
                     Button("Discard", systemImage: "trash") { onDiscard() }
                         .help("Close Without Saving (⌘W)")
+                    Picker("Format", selection: $model.format) {
+                        ForEach(ImageFormat.allCases) { Text($0.label).tag($0) }
+                    }
+                    .pickerStyle(.menu)
+                    .fixedSize()
+                    .help("Format")
                     Button("Copy", systemImage: "doc.on.doc") { onCopy() }
                         // 文字の入力中は ⌘C を入力欄に渡す
                         .keyboardShortcut(model.isEditingText ? nil : KeyboardShortcut("c", modifiers: .command))

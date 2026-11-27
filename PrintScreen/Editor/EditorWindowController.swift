@@ -71,16 +71,16 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
     private func copy() {
         model.finishTextEditing?()
         guard let image = model.renderedImage() else { return }
-        let settings = AppSettings.shared
-        guard settings.imageFormat != .png else {
+        let format = model.format
+        guard format != .png else {
             Clipboard.copy(image)
             Toast.show(String(localized: "Copied to Clipboard"))
             return
         }
         do {
-            let data = try ImageEncoder.encode(image, format: settings.imageFormat, quality: settings.imageQuality)
+            let data = try ImageEncoder.encode(image, format: format, quality: AppSettings.shared.imageQuality)
             let name = OutputFiles.baseName(prefix: String(localized: "Screenshot"), date: captureDate)
-            let url = try Clipboard.temporaryFileURL(name: name, ext: settings.imageFormat.fileExtension)
+            let url = try Clipboard.temporaryFileURL(name: name, ext: format.fileExtension)
             try data.write(to: url)
             Clipboard.copyFile(url)
             Toast.show(String(localized: "Copied to Clipboard"), detail: url.lastPathComponent)
@@ -94,11 +94,11 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
         guard let image = model.renderedImage() else { return }
         let settings = AppSettings.shared
         do {
-            let data = try ImageEncoder.encode(image, format: settings.imageFormat, quality: settings.imageQuality)
+            let data = try ImageEncoder.encode(image, format: model.format, quality: settings.imageQuality)
             try OutputFiles.ensureDirectory(settings.saveDirectory)
             let url = OutputFiles.uniqueURL(directory: settings.saveDirectory,
                                             baseName: OutputFiles.baseName(prefix: String(localized: "Screenshot"), date: captureDate),
-                                            ext: settings.imageFormat.fileExtension)
+                                            ext: model.format.fileExtension)
             try data.write(to: url)
             model.isSaved = true
             close()

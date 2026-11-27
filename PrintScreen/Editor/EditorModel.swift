@@ -39,6 +39,8 @@ final class EditorModel {
             }
         }
     }
+    /// この画像の保存形式。初期値は設定の形式で、変えても設定には残さない。
+    var format: ImageFormat = AppSettings.shared.imageFormat
     /// 保存済みかどうか（閉じるときの確認用）
     var isSaved = false
 
