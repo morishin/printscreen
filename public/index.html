@@ -15,7 +15,8 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+JP:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&amp;family=IBM+Plex+Sans:wght@400;600;700&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&amp;family=IBM+Plex+Sans:wght@400;600;700&amp;display=swap"></noscript>
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="PrintScreen">
   <meta property="og:title" content="PrintScreen — A Better Screenshot Tool for Mac">
@@ -39,7 +40,7 @@
 <body>
 <div class="wrap">
   <header class="topbar">
-    <a class="brand" href="/"><img src="/assets/icon.webp" width="32" height="32" alt="">PrintScreen</a>
+    <a class="brand" href="/"><img src="/assets/icon-240.webp" width="32" height="32" alt="">PrintScreen</a>
     <nav class="topnav" aria-label="Language">
       <a href="/" class="active" hreflang="en">EN</a>
       <a href="/ja/" hreflang="ja">JA</a>
@@ -49,7 +50,7 @@
 
 <main class="wrap">
   <section class="hero">
-    <img class="hero-icon" src="/assets/icon.webp" width="512" height="512" alt="PrintScreen app icon">
+    <img class="hero-icon" src="/assets/icon-240.webp" width="240" height="240" alt="PrintScreen app icon">
     <h1>A better screenshot tool for Mac</h1>
     <p class="lede">Replace the built-in screen capture. Mark up every shot, and save smaller files automatically.</p>
     <div class="actions">
@@ -73,7 +74,7 @@
       </video>
     </div>
     <div class="subfeature">
-      <img src="/assets/shots/en/overlay.webp" width="1280" height="680" alt="A click ripple on a button and pressed keys shown in the bottom-right corner" loading="lazy">
+      <img src="/assets/shots/en/overlay.webp" width="680" height="361" alt="A click ripple on a button and pressed keys shown in the bottom-right corner" loading="lazy" decoding="async">
       <div>
         <h3>See every click and key</h3>
         <p>Recordings can show a ripple where you click and your pressed keys in the corner, so viewers can follow along.</p>
@@ -87,7 +88,7 @@
       <h2>Add text, arrows, and boxes</h2>
       <p>The editor opens right after you capture, so you can point things out and hide private details.</p>
     </div>
-    <img class="shot" src="/assets/shots/en/editor.webp" width="1800" height="1319" alt="PrintScreen editor with text, an arrow, boxes, and mosaic drawn on a screenshot" loading="lazy">
+    <img class="shot" src="/assets/shots/en/editor.webp" srcset="/assets/shots/en/editor-1040.webp 1040w, /assets/shots/en/editor.webp 1800w" sizes="(max-width: 720px) calc(100vw - 32px), min(1040px, 100vw - 48px)" width="1800" height="1319" alt="PrintScreen editor with text, an arrow, boxes, and mosaic drawn on a screenshot" loading="lazy" decoding="async">
   </section>
 
   <section class="block">

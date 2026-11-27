@@ -15,7 +15,8 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+JP:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&amp;family=IBM+Plex+Sans+JP:wght@400;700&amp;family=IBM+Plex+Sans:wght@400;600;700&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&amp;family=IBM+Plex+Sans+JP:wght@400;700&amp;family=IBM+Plex+Sans:wght@400;600;700&amp;display=swap"></noscript>
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="PrintScreen">
   <meta property="og:title" content="PrintScreen — macOS 標準のスクショを置き換えるアプリ">
@@ -39,7 +40,7 @@
 <body>
 <div class="wrap">
   <header class="topbar">
-    <a class="brand" href="/ja/"><img src="/assets/icon.webp" width="32" height="32" alt="">PrintScreen</a>
+    <a class="brand" href="/ja/"><img src="/assets/icon-240.webp" width="32" height="32" alt="">PrintScreen</a>
     <nav class="topnav" aria-label="Language">
       <a href="/" hreflang="en">EN</a>
       <a href="/ja/" class="active" hreflang="ja">JA</a>
@@ -49,7 +50,7 @@
 
 <main class="wrap">
   <section class="hero">
-    <img class="hero-icon" src="/assets/icon.webp" width="512" height="512" alt="PrintScreen app icon">
+    <img class="hero-icon" src="/assets/icon-240.webp" width="240" height="240" alt="PrintScreen app icon">
     <h1>macOS&nbsp;のスクショを、<wbr>もっと便利に</h1>
     <p class="lede">標準のスクリーンキャプチャの代わりに。撮ったらすぐ書き込めて、ファイルは自動で軽くなります。</p>
     <div class="actions">
@@ -73,7 +74,7 @@
       </video>
     </div>
     <div class="subfeature">
-      <img src="/assets/shots/ja/overlay.webp" width="1280" height="680" alt="ボタン上のクリックの波紋と、右下に表示された押したキー" loading="lazy">
+      <img src="/assets/shots/ja/overlay.webp" width="680" height="361" alt="ボタン上のクリックの波紋と、右下に表示された押したキー" loading="lazy" decoding="async">
       <div>
         <h3>クリックとキー入力も見える</h3>
         <p>録画中のクリックを波紋で、押したキーを右下に表示できます。操作の手順がそのまま伝わります。</p>
@@ -87,7 +88,7 @@
       <h2>文字、矢印、枠を<wbr>すぐ入れられる</h2>
       <p>撮影するとすぐに編集画面が開きます。伝えたい場所を示し、隠したい情報にはモザイクをかけられます。</p>
     </div>
-    <img class="shot" src="/assets/shots/ja/editor.webp" width="1800" height="1319" alt="スクリーンショットに文字、矢印、枠、モザイクを書き込んだ PrintScreen の編集画面" loading="lazy">
+    <img class="shot" src="/assets/shots/ja/editor.webp" srcset="/assets/shots/ja/editor-1040.webp 1040w, /assets/shots/ja/editor.webp 1800w" sizes="(max-width: 720px) calc(100vw - 32px), min(1040px, 100vw - 48px)" width="1800" height="1319" alt="スクリーンショットに文字、矢印、枠、モザイクを書き込んだ PrintScreen の編集画面" loading="lazy" decoding="async">
   </section>
 
   <section class="block">
