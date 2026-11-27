@@ -1,0 +1,59 @@
+{
+  "images": [
+    {
+      "filename": "shortcuts-en.png",
+      "idiom": "universal",
+      "locale": "en",
+      "scale": "2x"
+    },
+    {
+      "filename": "shortcuts-ja.png",
+      "idiom": "universal",
+      "locale": "ja",
+      "scale": "2x"
+    },
+    {
+      "filename": "shortcuts-zh-Hans.png",
+      "idiom": "universal",
+      "locale": "zh-Hans",
+      "scale": "2x"
+    },
+    {
+      "filename": "shortcuts-zh-Hant.png",
+      "idiom": "universal",
+      "locale": "zh-Hant",
+      "scale": "2x"
+    },
+    {
+      "filename": "shortcuts-ko.png",
+      "idiom": "universal",
+      "locale": "ko",
+      "scale": "2x"
+    },
+    {
+      "filename": "shortcuts-es.png",
+      "idiom": "universal",
+      "locale": "es",
+      "scale": "2x"
+    },
+    {
+      "filename": "shortcuts-de.png",
+      "idiom": "universal",
+      "locale": "de",
+      "scale": "2x"
+    },
+    {
+      "filename": "shortcuts-fr.png",
+      "idiom": "universal",
+      "locale": "fr",
+      "scale": "2x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  },
+  "properties": {
+    "localizable": true
+  }
+}

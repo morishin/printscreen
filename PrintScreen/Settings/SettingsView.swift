@@ -237,8 +237,20 @@ private struct ShortcutSettingsView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
-            Button("Open Keyboard Shortcuts Settings") {
-                NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension")!)
+            Section {
+                Button("Open Keyboard Shortcuts Settings") {
+                    // ?Shortcuts でキーボードショートカットのシートまで開く。スクリーンショットの項目は選べない
+                    NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension?Shortcuts")!)
+                }
+            } footer: {
+                // 言語ごとの画像は tools/media/system_shortcuts.sh で撮り直す
+                Image("SystemScreenshotShortcuts")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity)
+                    .shadow(color: .black.opacity(0.15), radius: 3, y: 1)
+                    .padding(.top, 4)
+                    .accessibilityHidden(true)
             }
         }
         .formStyle(.grouped)

@@ -41,6 +41,17 @@ tools/media/media.sh encode /tmp/printscreen-media
 
 If the English demo changes, upload `public/assets/shots/en/demo.webm` with `gh attach` and replace the video URL in the README.
 
+## System Settings screenshot in the Shortcuts tab
+
+The Shortcuts tab shows where to turn off the macOS screenshot shortcuts. Retake the image in every app language after a macOS update changes that sheet. The terminal needs Accessibility permission. **This quits System Settings and briefly takes over the screen.**
+
+```bash
+tools/media/system_shortcuts.sh          # all languages
+tools/media/system_shortcuts.sh en ja    # only some
+```
+
+The script opens System Settings in each language with `-AppleLanguages`, so the Mac's language does not need to change. It writes `PrintScreen/Assets.xcassets/SystemScreenshotShortcuts.imageset/shortcuts-<lang>.png`.
+
 ## Social preview image
 
 ```bash
