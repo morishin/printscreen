@@ -32,6 +32,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// Finder の「このアプリケーションで開く」などで画像を渡されたら、編集画面で開く。
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls { EditorWindowController.open(fileURL: url) }
+    }
+
     /// 起動中にアプリをもう一度開いたら設定を出す。アイコンを隠しているときの入口になる。
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         StatusItemController.shared.openSettings()

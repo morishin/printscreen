@@ -20,22 +20,45 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
     private static var openControllers: Set<EditorWindowController> = []
 
     private let model: EditorModel
-    private let captureDate: Date
+    /// 保存するファイルの名前（拡張子なし）
+    private let baseName: String
 
     static func open(image: CGImage, pixelScale: CGFloat, captureDate: Date = .now) {
-        let controller = EditorWindowController(image: image, pixelScale: pixelScale, captureDate: captureDate)
+        show(EditorWindowController(image: image, pixelScale: pixelScale,
+                                    baseName: OutputFiles.baseName(prefix: String(localized: "Screenshot"), date: captureDate),
+                                    title: String(localized: "Screenshot")))
+    }
+
+    /// 既存の画像ファイルを開いて書き込む。保存は元のファイルを上書きせず、保存先フォルダに同じ名前で書き出す。
+    static func open(fileURL: URL) {
+        guard let loaded = ImageFile.load(fileURL) else {
+            let alert = NSAlert()
+            alert.messageText = String(localized: "Can't open the image")
+            alert.informativeText = fileURL.lastPathComponent
+            NSApp.activate(ignoringOtherApps: true)
+            alert.runModal()
+            return
+        }
+        let controller = EditorWindowController(image: loaded.image, pixelScale: loaded.pixelScale,
+                                                baseName: fileURL.deletingPathExtension().lastPathComponent,
+                                                title: fileURL.lastPathComponent)
+        if let format = loaded.format { controller.model.format = format }
+        show(controller)
+    }
+
+    private static func show(_ controller: EditorWindowController) {
         openControllers.insert(controller)
         controller.showWindow(nil)
         controller.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    private init(image: CGImage, pixelScale: CGFloat, captureDate: Date) {
+    private init(image: CGImage, pixelScale: CGFloat, baseName: String, title: String) {
         self.model = EditorModel(image: image, pixelScale: pixelScale)
-        self.captureDate = captureDate
+        self.baseName = baseName
         let window = EditorWindow(contentRect: .zero, styleMask: [.titled, .closable, .resizable, .miniaturizable],
                                   backing: .buffered, defer: false)
-        window.title = String(localized: "Screenshot") // Mission Control などで使う。タイトルバーには出さない
+        window.title = title // Mission Control などで使う。タイトルバーには出さない
         window.titleVisibility = .hidden
         window.toolbarStyle = .unified
         window.isReleasedWhenClosed = false
@@ -79,8 +102,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
         }
         do {
             let data = try ImageEncoder.encode(image, format: format, quality: AppSettings.shared.imageQuality)
-            let name = OutputFiles.baseName(prefix: String(localized: "Screenshot"), date: captureDate)
-            let url = try Clipboard.temporaryFileURL(name: name, ext: format.fileExtension)
+            let url = try Clipboard.temporaryFileURL(name: baseName, ext: format.fileExtension)
             try data.write(to: url)
             Clipboard.copyFile(url)
             Toast.show(String(localized: "Copied to Clipboard"), detail: url.lastPathComponent)
@@ -97,7 +119,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
             let data = try ImageEncoder.encode(image, format: model.format, quality: settings.imageQuality)
             try OutputFiles.ensureDirectory(settings.saveDirectory)
             let url = OutputFiles.uniqueURL(directory: settings.saveDirectory,
-                                            baseName: OutputFiles.baseName(prefix: String(localized: "Screenshot"), date: captureDate),
+                                            baseName: baseName,
                                             ext: model.format.fileExtension)
             try data.write(to: url)
             model.isSaved = true
