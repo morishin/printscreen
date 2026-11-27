@@ -32,20 +32,38 @@ enum ScreenCapturer {
         return NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) } ?? NSScreen.main ?? NSScreen.screens[0]
     }
 
-    /// 範囲を撮影する。selection が nil なら画面全体。
+    /// 範囲を撮影する。rect はディスプレイ左上原点のポイントで、nil なら画面全体。
+    /// ディスプレイを指定する撮り方ではウインドウやメニューの影が写らないので、
+    /// macOS 標準のスクリーンショットと同じく影まで写る、画面上の範囲を指定する撮り方を使う。
     static func capture(screen: NSScreen, rect: CGRect?) async throws -> CGImage {
-        let (display, _) = try await scDisplay(for: screen)
-        let filter = SCContentFilter(display: display, excludingWindows: [])
-        let config = SCStreamConfiguration()
-        let scale = screen.backingScaleFactor
-        let sourceRect = rect ?? CGRect(origin: .zero, size: screen.frame.size)
-        config.sourceRect = sourceRect
-        config.width = Int(sourceRect.width * scale)
-        config.height = Int(sourceRect.height * scale)
-        config.showsCursor = false
-        config.captureResolution = .best
-        config.colorSpaceName = CGColorSpace.sRGB
-        return try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
+        let display = CGDisplayBounds(displayID(of: screen))
+        let local = rect ?? CGRect(origin: .zero, size: display.size)
+        let global = local.offsetBy(dx: display.minX, dy: display.minY)
+        return try await SCScreenshotManager.captureImage(in: global)
+    }
+
+    /// すべての画面をそのまま撮る。範囲選択の前に撮っておき、右クリックメニューやツールチップのように
+    /// オーバーレイを出すと消えてしまうものも写るようにする。キーは画面の displayID。
+    static func snapshotAllScreens() async -> [CGDirectDisplayID: CGImage] {
+        await withTaskGroup(of: (CGDirectDisplayID, CGImage?).self) { group in
+            for screen in NSScreen.screens {
+                let id = displayID(of: screen)
+                group.addTask { @MainActor in (id, try? await capture(screen: screen, rect: nil)) }
+            }
+            var result: [CGDirectDisplayID: CGImage] = [:]
+            for await (id, image) in group {
+                if let image { result[id] = image }
+            }
+            return result
+        }
+    }
+
+    /// 撮っておいた画面全体の画像から範囲を切り出す。rect はディスプレイ左上原点のポイント。
+    static func crop(_ snapshot: CGImage, screen: NSScreen, rect: CGRect) -> CGImage? {
+        let scale = CGFloat(snapshot.width) / screen.frame.width
+        let pixelRect = CGRect(x: rect.minX * scale, y: rect.minY * scale,
+                               width: rect.width * scale, height: rect.height * scale).integral
+        return snapshot.cropping(to: pixelRect)
     }
 
     /// ウインドウ単体を影付き・背景透過で撮影する。

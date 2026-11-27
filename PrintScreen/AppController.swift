@@ -45,9 +45,18 @@ final class AppController {
     // MARK: 静止画
 
     private func captureArea() async {
-        switch await AreaSelector.selectCaptureTarget() {
+        // オーバーレイを出す前の画面を撮っておき、選択中はそれを表示して、選んだ範囲を切り出す
+        let snapshots = await ScreenCapturer.snapshotAllScreens()
+        switch await AreaSelector.selectCaptureTarget(snapshots: snapshots) {
         case .area(let selection):
-            await capture(screen: selection.screen, rect: selection.displayLocalRect)
+            let id = ScreenCapturer.displayID(of: selection.screen)
+            if let snapshot = snapshots[id],
+               let image = ScreenCapturer.crop(snapshot, screen: selection.screen, rect: selection.displayLocalRect) {
+                NSSound(named: "Grab")?.play()
+                EditorWindowController.open(image: image, pixelScale: selection.screen.backingScaleFactor)
+            } else {
+                await capture(screen: selection.screen, rect: selection.displayLocalRect)
+            }
         case .window(let selection):
             await captureWindow(selection)
         case nil:

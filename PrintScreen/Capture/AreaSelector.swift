@@ -68,13 +68,16 @@ final class AreaSelector {
         return selection
     }
 
-    /// 静止画用。範囲またはウインドウを選ぶ。
-    static func selectCaptureTarget() async -> CaptureTarget? {
-        await run(allowsWindowMode: true)
+    /// 静止画用。範囲またはウインドウを選ぶ。snapshots があれば、止めた画面としてオーバーレイの下に表示する。
+    static func selectCaptureTarget(snapshots: [CGDirectDisplayID: CGImage] = [:]) async -> CaptureTarget? {
+        await run(allowsWindowMode: true, snapshots: snapshots)
     }
 
-    private static func run(allowsWindowMode: Bool) async -> CaptureTarget? {
+    private var snapshots: [CGDirectDisplayID: CGImage] = [:]
+
+    private static func run(allowsWindowMode: Bool, snapshots: [CGDirectDisplayID: CGImage] = [:]) async -> CaptureTarget? {
         let selector = AreaSelector()
+        selector.snapshots = snapshots
         return await withCheckedContinuation { cont in
             selector.continuation = cont
             selector.show(allowsWindowMode: allowsWindowMode)
@@ -104,7 +107,7 @@ final class AreaSelector {
 
     private func show(allowsWindowMode: Bool) {
         for screen in NSScreen.screens {
-            let window = SelectionWindow(screen: screen)
+            let window = SelectionWindow(screen: screen, snapshot: snapshots[ScreenCapturer.displayID(of: screen)])
             window.selectionView.onFinish = { [weak self] rect in
                 self?.finish(rect.map { .area(AreaSelection(screen: screen, rect: $0)) })
             }
@@ -140,8 +143,9 @@ final class AreaSelector {
 private final class SelectionWindow: NSPanel {
     let selectionView: SelectionView
 
-    init(screen: NSScreen) {
-        selectionView = SelectionView(frame: CGRect(origin: .zero, size: screen.frame.size))
+    init(screen: NSScreen, snapshot: CGImage?) {
+        let bounds = CGRect(origin: .zero, size: screen.frame.size)
+        selectionView = SelectionView(frame: bounds)
         super.init(contentRect: screen.frame, styleMask: [.borderless, .nonactivatingPanel],
                    backing: .buffered, defer: false)
         setFrame(screen.frame, display: false)
@@ -152,7 +156,22 @@ private final class SelectionWindow: NSPanel {
         ignoresMouseEvents = false
         acceptsMouseMovedEvents = true
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
-        contentView = selectionView
+        if let snapshot {
+            // 止めた画面を下に敷く。選択範囲は SelectionView が透明に抜くので、この画像が見える。
+            let container = NSView(frame: bounds)
+            container.wantsLayer = true
+            container.layer?.contents = snapshot
+            container.layer?.contentsGravity = .resize
+            selectionView.wantsLayer = true
+            selectionView.autoresizingMask = [.width, .height]
+            container.addSubview(selectionView)
+            contentView = container
+        } else {
+            contentView = selectionView
+        }
+        // Esc やスペースを SelectionView で受け取る
+        initialFirstResponder = selectionView
+        makeFirstResponder(selectionView)
     }
 
     override var canBecomeKey: Bool { true }
