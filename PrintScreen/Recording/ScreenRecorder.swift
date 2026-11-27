@@ -191,6 +191,8 @@ final class ScreenRecorder: NSObject, SCRecordingOutputDelegate, SCStreamDelegat
             if self.finishContinuation != nil {
                 self.resumeFinish(with: error)
             } else {
+                // 押したキーやクリックの監視を残さないよう、オーバーレイを片付けてから知らせる
+                self.cleanUpWindows()
                 self.onUnexpectedStop?(error)
             }
         }
