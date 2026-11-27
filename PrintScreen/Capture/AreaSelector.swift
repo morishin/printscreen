@@ -116,7 +116,8 @@ final class AreaSelector {
             window.orderFrontRegardless()
             windows.append(window)
         }
-        NSApp.activate(ignoringOtherApps: true)
+        // アプリはアクティブにしない。撮る対象のウインドウがフォーカスを失って見た目が変わらないよう、
+        // 操作中のアプリをアクティブなまま、非アクティブ化パネルだけをキーにして Esc やスペースを受け取る。
         // マウスがある画面のウインドウをキーにする
         let mouse = NSEvent.mouseLocation
         (windows.first { $0.frame.contains(mouse) } ?? windows.first)?.makeKey()
@@ -203,6 +204,8 @@ private final class SelectionView: NSView {
             onWindowHover?()
             return
         }
+        // アプリがアクティブでないとカーソルが元に戻されることがあるので、動くたびに設定し直す
+        currentCursor.set()
         mouse = convert(event.locationInWindow, from: nil)
         needsDisplay = true
     }
