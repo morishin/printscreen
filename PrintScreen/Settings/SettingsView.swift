@@ -4,15 +4,57 @@ import SwiftUI
 
 struct SettingsView: View {
     var body: some View {
-        TabView {
-            Tab("General", systemImage: "gearshape") { GeneralSettingsView() }
-            Tab("Image", systemImage: "photo") { ImageSettingsView() }
-            Tab("Video", systemImage: "video") { VideoSettingsView() }
-            Tab("Shortcuts", systemImage: "command") { ShortcutSettingsView() }
-            Tab("About", systemImage: "info.circle") { AboutView() }
+        VStack(spacing: 0) {
+            ScreenCapturePermissionBanner()
+            TabView {
+                Tab("General", systemImage: "gearshape") { GeneralSettingsView() }
+                Tab("Image", systemImage: "photo") { ImageSettingsView() }
+                Tab("Video", systemImage: "video") { VideoSettingsView() }
+                Tab("Shortcuts", systemImage: "command") { ShortcutSettingsView() }
+                Tab("About", systemImage: "info.circle") { AboutView() }
+            }
         }
         // Form は高さを主張しないので、指定しないとウインドウが潰れて中身が見えなくなる
         .frame(width: 520, height: 500)
+    }
+}
+
+/// 画面収録の許可がないときに設定ウインドウの上部に出すバナー。
+private struct ScreenCapturePermissionBanner: View {
+    @State private var granted = CGPreflightScreenCaptureAccess()
+
+    var body: some View {
+        Group {
+            if !granted {
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.yellow)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Screen Recording Permission Required")
+                            .font(.headline)
+                        Text("Allow PrintScreen in System Settings › Privacy & Security › Screen & System Audio Recording. You may need to restart the app afterward.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button("Open System Settings") {
+                            CGRequestScreenCaptureAccess()
+                            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
+                        }
+                        .controlSize(.small)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(12)
+                .background(.yellow.opacity(0.15), in: RoundedRectangle(cornerRadius: 8))
+                .padding([.horizontal, .top], 12)
+            }
+        }
+        .onAppear { granted = CGPreflightScreenCaptureAccess() }
+        // システム設定から戻ってきたときに確かめ直す
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            granted = CGPreflightScreenCaptureAccess()
+        }
     }
 }
 
