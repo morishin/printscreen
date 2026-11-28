@@ -27,6 +27,7 @@
 # Product Decisions
 
 - The editor's `Esc` switches to the Select tool. `⌘W` discards, and asks first if there are annotations.
+- Copy and Save close the editor when it has no annotations, hiding it before the image is converted. With annotations it stays open, because people often keep editing.
 - Mosaic uses the exact average color of each block through Accelerate. `CIPixellate` samples pixels and looks harsh.
 - Recordings have no audio, neither system audio nor microphone.
 - ffmpeg is not bundled. The app calls the user's install. Without it, WebM is disabled and recordings are saved as MP4.

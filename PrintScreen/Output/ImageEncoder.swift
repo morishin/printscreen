@@ -3,7 +3,7 @@ import ImageIO
 import UniformTypeIdentifiers
 import libwebp
 
-enum ImageEncoder {
+nonisolated enum ImageEncoder {
     enum EncodeError: LocalizedError {
         case failed
         var errorDescription: String? { String(localized: "Failed to export the image") }

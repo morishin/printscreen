@@ -153,8 +153,8 @@ final class AppController {
         defer { try? FileManager.default.removeItem(at: tempURL) }
         switch format {
         case .webm:
-            Toast.show(String(localized: "Converting to WebM…"), duration: 600)
-            try await FFmpeg.convertToWebM(input: tempURL, output: dest)
+            Toast.showActivity(String(localized: "Converting to WebM…"), progress: 0)
+            try await FFmpeg.convertToWebM(input: tempURL, output: dest) { Toast.setProgress($0) }
         case .mp4:
             try FileManager.default.moveItem(at: tempURL, to: dest)
         case .mov:

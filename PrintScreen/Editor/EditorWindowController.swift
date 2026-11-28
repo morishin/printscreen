@@ -89,45 +89,85 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
 
     // MARK: 操作
 
+    /// 書き出し中。コピーや保存を重ねて始めないようにする。
+    private var isExporting = false
+
+    /// 書き出しの間に出すトーストの文言。
+    private static func exportingMessage(_ format: ImageFormat) -> String {
+        String(localized: "Converting to \(format.label)…")
+    }
+
+    /// 画像を作ってから、形式の変換をバックグラウンドで行う。WebP などは 1 秒ほどかかるので、その間はトーストを出しておく。
+    /// 書き込みがなければ、書き出したらウインドウを閉じる。変換を待たずに先に隠し、失敗したら出し直す。
+    /// 書き込みがあるときは、続けて直したくなることがあるので閉じない。
+    private func export(then completion: @escaping (CGImage, Data) throws -> Void) {
+        guard !isExporting else { return }
+        model.finishTextEditing?()
+        let format = model.format
+        let quality = AppSettings.shared.imageQuality
+        let closesWindow = model.annotations.isEmpty
+        if closesWindow { window?.orderOut(nil) }
+        Toast.showActivity(Self.exportingMessage(format))
+        guard let image = model.renderedImage() else {
+            Toast.hide()
+            if closesWindow { window?.makeKeyAndOrderFront(nil) }
+            return
+        }
+        isExporting = true
+        Task {
+            defer { isExporting = false }
+            do {
+                let data = try await Task.detached(priority: .userInitiated) {
+                    try ImageEncoder.encode(image, format: format, quality: quality)
+                }.value
+                try completion(image, data)
+                if closesWindow { discard() }
+            } catch {
+                showExportError(error)
+            }
+        }
+    }
+
+    /// 書き出しに失敗したとき。隠したウインドウを出し直して知らせる。
+    private func showExportError(_ error: Error) {
+        Toast.hide()
+        guard let window else { return }
+        if !window.isVisible {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        NSAlert(error: error).beginSheetModal(for: window)
+    }
+
     /// PNG は画像データのまま、ほかの形式は保存形式のファイルとしてコピーする。
     /// 画像データとしての WebP は多くのアプリが読まず PNG で貼られてしまうため。
     private func copy() {
-        model.finishTextEditing?()
-        guard let image = model.renderedImage() else { return }
         let format = model.format
-        guard format != .png else {
-            Clipboard.copy(image)
-            Toast.show(String(localized: "Copied to Clipboard"))
-            return
-        }
-        do {
-            let data = try ImageEncoder.encode(image, format: format, quality: AppSettings.shared.imageQuality)
-            let url = try Clipboard.temporaryFileURL(name: baseName, ext: format.fileExtension)
-            try data.write(to: url)
-            Clipboard.copyFile(url)
-            Toast.show(String(localized: "Copied to Clipboard"), detail: url.lastPathComponent)
-        } catch {
-            NSAlert(error: error).beginSheetModal(for: window!)
+        let name = baseName
+        export { image, data in
+            if format == .png {
+                Clipboard.copy(image, png: data)
+                Toast.show(String(localized: "Copied to Clipboard"))
+            } else {
+                let url = try Clipboard.temporaryFileURL(name: name, ext: format.fileExtension)
+                try data.write(to: url)
+                Clipboard.copyFile(url)
+                Toast.show(String(localized: "Copied to Clipboard"), detail: url.lastPathComponent)
+            }
         }
     }
 
     private func save() {
-        model.finishTextEditing?()
-        guard let image = model.renderedImage() else { return }
-        let settings = AppSettings.shared
-        do {
-            let data = try ImageEncoder.encode(image, format: model.format, quality: settings.imageQuality)
+        let format = model.format
+        let name = baseName
+        export { [weak self] _, data in
+            let settings = AppSettings.shared
             try OutputFiles.ensureDirectory(settings.saveDirectory)
-            let url = OutputFiles.uniqueURL(directory: settings.saveDirectory,
-                                            baseName: baseName,
-                                            ext: model.format.fileExtension)
+            let url = OutputFiles.uniqueURL(directory: settings.saveDirectory, baseName: name,
+                                            ext: format.fileExtension)
             try data.write(to: url)
-            model.isSaved = true
-            close()
+            self?.model.isSaved = true
             Toast.show(String(localized: "Saved"), detail: url.lastPathComponent, fileURL: url)
-        } catch {
-            let alert = NSAlert(error: error)
-            alert.beginSheetModal(for: window!)
         }
     }
 
@@ -177,9 +217,8 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
 }
 
 enum Clipboard {
-    static func copy(_ image: CGImage) {
+    static func copy(_ image: CGImage, png: Data) {
         let rep = NSBitmapImageRep(cgImage: image)
-        guard let png = rep.representation(using: .png, properties: [:]) else { return }
         let pb = NSPasteboard.general
         pb.clearContents()
         pb.setData(png, forType: .png)

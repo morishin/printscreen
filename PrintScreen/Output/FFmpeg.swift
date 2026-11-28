@@ -1,4 +1,6 @@
+import AVFoundation
 import Foundation
+import os
 
 /// Homebrew などで入れた ffmpeg を使って WebM に変換する。
 enum FFmpeg {
@@ -26,13 +28,15 @@ enum FFmpeg {
         }
     }
 
-    /// VP9 の WebM に変換する。
-    static func convertToWebM(input: URL, output: URL) async throws {
+    /// VP9 の WebM に変換する。progress には進み具合（0〜1）をメインスレッドで渡す。
+    static func convertToWebM(input: URL, output: URL, progress: ((Double) -> Void)? = nil) async throws {
         guard let ffmpeg = executableURL else { throw ConversionError.notInstalled }
+        // 進み具合は、ffmpeg が書き出した位置を動画の長さで割って出す
+        let duration = (try? await AVURLAsset(url: input).load(.duration).seconds) ?? 0
         let process = Process()
         process.executableURL = ffmpeg
         process.arguments = [
-            "-y", "-hide_banner", "-loglevel", "error",
+            "-y", "-hide_banner", "-loglevel", "error", "-nostats", "-progress", "pipe:1",
             "-i", input.path,
             "-c:v", "libvpx-vp9",
             "-crf", "36", "-b:v", "0",
@@ -43,7 +47,33 @@ enum FFmpeg {
         ]
         let errPipe = Pipe()
         process.standardError = errPipe
-        process.standardOutput = FileHandle.nullDevice
+        let outPipe = Pipe()
+        process.standardOutput = outPipe
+        if let progress, duration > 0 {
+            // -progress は「out_time_us=1234567」のような行を書き出す
+            let buffer = OSAllocatedUnfairLock(initialState: "")
+            outPipe.fileHandleForReading.readabilityHandler = { handle in
+                let chunk = String(decoding: handle.availableData, as: UTF8.self)
+                let latest = buffer.withLock { buffer -> Double? in
+                    buffer += chunk
+                    var latest: Double?
+                    while let newline = buffer.firstIndex(of: "\n") {
+                        let line = buffer[..<newline]
+                        if line.hasPrefix("out_time_us="), let us = Double(line.dropFirst("out_time_us=".count)) {
+                            latest = us / 1_000_000 / duration
+                        }
+                        buffer.removeSubrange(...newline)
+                    }
+                    return latest
+                }
+                if let latest {
+                    DispatchQueue.main.async { progress(latest) }
+                }
+            }
+        } else {
+            outPipe.fileHandleForReading.readabilityHandler = { handle in _ = handle.availableData }
+        }
+        defer { outPipe.fileHandleForReading.readabilityHandler = nil }
 
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
             process.terminationHandler = { p in
