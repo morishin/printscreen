@@ -1,5 +1,12 @@
 import AppKit
 
+// 非公開 API。アクティブでないアプリのカーソル変更を WindowServer に受け付けさせる。
+// これがないと、範囲選択中に十字カーソルにならないことがある（特に修飾キーなしのショートカットで起動したとき）。
+@_silgen_name("_CGSDefaultConnection")
+private func _CGSDefaultConnection() -> Int32
+@_silgen_name("CGSSetConnectionProperty")
+private func CGSSetConnectionProperty(_ cid: Int32, _ targetCID: Int32, _ key: CFString, _ value: CFTypeRef) -> CGError
+
 /// 選択された範囲。rect は AppKit のグローバル座標（左下原点、ポイント）。
 struct AreaSelection {
     let screen: NSScreen
@@ -134,7 +141,13 @@ final class AreaSelector {
         // 操作中のアプリをアクティブなまま、非アクティブ化パネルだけをキーにして Esc やスペースを受け取る。
         // マウスがある画面のウインドウをキーにする
         let mouse = NSEvent.mouseLocation
+        // マウスを動かす前から座標を出す
+        for w in windows where w.frame.contains(mouse) {
+            w.selectionView.mouse = w.convertPoint(fromScreen: mouse)
+        }
         (windows.first { $0.frame.contains(mouse) } ?? windows.first)?.makeKey()
+        let connection = _CGSDefaultConnection()
+        _ = CGSSetConnectionProperty(connection, connection, "SetsCursorInBackground" as CFString, kCFBooleanTrue)
         NSCursor.crosshair.push()
     }
 
@@ -208,7 +221,9 @@ private final class SelectionView: NSView {
     private var currentCursor: NSCursor { isWindowMode ? .pointingHand : .crosshair }
     private var start: CGPoint?
     private var current: CGPoint?
-    private var mouse: CGPoint?
+    var mouse: CGPoint? {
+        didSet { needsDisplay = true }
+    }
 
     override var acceptsFirstResponder: Bool { true }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
@@ -237,7 +252,6 @@ private final class SelectionView: NSView {
         // アプリがアクティブでないとカーソルが元に戻されることがあるので、動くたびに設定し直す
         currentCursor.set()
         mouse = convert(event.locationInWindow, from: nil)
-        needsDisplay = true
     }
 
     override func mouseDown(with event: NSEvent) {
