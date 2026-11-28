@@ -58,7 +58,7 @@ PrintScreen lives in the menu bar. Use its menu or these default shortcuts:
 |---|---|
 | `⌘⇧3` | Capture full screen |
 | `⌘⇧4` or `Print Screen` | Capture area (press `Space` to select a window) |
-| `⌘⇧5` | Record area, or stop recording |
+| `⌘⇧5` | Record area (press `Space` to select a window), or stop recording |
 | `Esc` | Cancel selection or recording |
 
 To use these defaults, turn off the macOS shortcuts in **System Settings › Keyboard › Keyboard Shortcuts › Screenshots**. You can also choose different shortcuts in PrintScreen's settings.

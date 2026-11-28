@@ -53,7 +53,7 @@ enum CaptureTarget {
 }
 
 /// 全画面に半透明のオーバーレイを出し、ドラッグで範囲を選ばせる。Esc でキャンセル。
-/// 静止画ではスペースキーでウインドウ選択に切り替えられる。
+/// スペースキーでウインドウ選択に切り替えられる。
 @MainActor
 final class AreaSelector {
     private var windows: [SelectionWindow] = []
@@ -62,10 +62,21 @@ final class AreaSelector {
     private var windowCandidates: [WindowSelection] = []
     private var hoveredWindow: WindowSelection?
 
-    /// 録画用。範囲選択のみ。
+    /// 録画用。範囲またはウインドウを選ぶ。ウインドウは、いちばん大きく重なっている画面の上の範囲として返す。
+    /// ウインドウ単体ではなく範囲として録るので、クリックや押したキーの表示も映る。
     static func select() async -> AreaSelection? {
-        guard case .area(let selection)? = await run(allowsWindowMode: false) else { return nil }
-        return selection
+        switch await run(allowsWindowMode: true) {
+        case .area(let selection):
+            return selection
+        case .window(let window):
+            let candidates = NSScreen.screens.map { ($0, $0.frame.intersection(window.rect)) }
+                .filter { !$0.1.isNull && $0.1.width >= 4 && $0.1.height >= 4 }
+            guard let (screen, rect) = candidates.max(by: { $0.1.width * $0.1.height < $1.1.width * $1.1.height })
+            else { return nil }
+            return AreaSelection(screen: screen, rect: rect.integral)
+        case nil:
+            return nil
+        }
     }
 
     /// 静止画用。範囲またはウインドウを選ぶ。snapshots があれば、止めた画面としてオーバーレイの下に表示する。
