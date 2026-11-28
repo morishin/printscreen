@@ -3,7 +3,7 @@ import Carbon.HIToolbox
 import Observation
 
 /// キーの組み合わせ。
-struct KeyCombo: Codable, Equatable {
+struct KeyCombo: Codable, Hashable {
     var keyCode: UInt32
     /// NSEvent.ModifierFlags の rawValue（command / shift / option / control のみ）
     var modifiers: UInt
@@ -25,6 +25,8 @@ struct KeyCombo: Codable, Equatable {
         if modifierFlags.contains(.option) { s += "⌥" }
         if modifierFlags.contains(.shift) { s += "⇧" }
         if modifierFlags.contains(.command) { s += "⌘" }
+        // PC 用キーボードの Print Screen キーは Mac では F13 として届く
+        if keyCode == UInt32(kVK_F13) { return s + "\(String(localized: "Print Screen")) (F13)" }
         return s + KeyCombo.keyName(for: keyCode)
     }
 
@@ -79,57 +81,90 @@ enum HotkeyAction: String, CaseIterable, Identifiable {
         }
     }
 
-    var defaultCombo: KeyCombo {
+    var defaultCombos: [KeyCombo] {
         let cmdShift = NSEvent.ModifierFlags([.command, .shift]).rawValue
         switch self {
-        case .captureFullScreen: return KeyCombo(keyCode: UInt32(kVK_ANSI_3), modifiers: cmdShift)
-        case .captureArea: return KeyCombo(keyCode: UInt32(kVK_ANSI_4), modifiers: cmdShift)
-        case .recordArea: return KeyCombo(keyCode: UInt32(kVK_ANSI_5), modifiers: cmdShift)
+        case .captureFullScreen: return [KeyCombo(keyCode: UInt32(kVK_ANSI_3), modifiers: cmdShift)]
+        case .captureArea: return [KeyCombo(keyCode: UInt32(kVK_ANSI_4), modifiers: cmdShift),
+                                   KeyCombo(keyCode: UInt32(kVK_F13), modifiers: 0)]
+        case .recordArea: return [KeyCombo(keyCode: UInt32(kVK_ANSI_5), modifiers: cmdShift)]
         }
     }
 }
 
-/// グローバルなショートカットキーの登録と保存。
+/// グローバルなショートカットキーの登録と保存。アクションごとに複数のショートカットを持てる。
 @Observable
 final class HotkeyManager {
     static let shared = HotkeyManager()
 
-    private(set) var combos: [HotkeyAction: KeyCombo] = [:]
-    /// 登録に失敗したアクション（ほかのアプリやシステムが使っている）。
-    private(set) var failedActions: Set<HotkeyAction> = []
+    private(set) var combos: [HotkeyAction: [KeyCombo]] = [:]
+    /// 登録に失敗したショートカット（ほかのアプリやシステムが使っている）。
+    private(set) var failedCombos: [HotkeyAction: Set<KeyCombo>] = [:]
 
     @ObservationIgnored var handler: ((HotkeyAction) -> Void)?
     @ObservationIgnored var escapeHandler: (() -> Void)?
     @ObservationIgnored private var escapeRef: EventHotKeyRef?
-    @ObservationIgnored private var refs: [HotkeyAction: EventHotKeyRef] = [:]
+    @ObservationIgnored private var refs: [HotkeyAction: [EventHotKeyRef]] = [:]
     @ObservationIgnored private var eventHandler: EventHandlerRef?
     @ObservationIgnored private let signature: OSType = 0x5052_5343 // 'PRSC'
+    /// Esc 用の ID。アクションの ID は 1000 + アクション番号 * 100 + 何番目か。
+    private static let escapeID: UInt32 = 100
 
     private init() {
+        let defaults = UserDefaults.standard
         for action in HotkeyAction.allCases {
-            if let data = UserDefaults.standard.data(forKey: "hotkey.\(action.rawValue)"),
-               let combo = try? JSONDecoder().decode(KeyCombo.self, from: data) {
-                combos[action] = combo
-            } else if UserDefaults.standard.object(forKey: "hotkey.\(action.rawValue)") == nil {
-                combos[action] = action.defaultCombo
+            if let data = defaults.data(forKey: Self.storageKey(action)),
+               let list = try? JSONDecoder().decode([KeyCombo].self, from: data) {
+                combos[action] = list
+            } else if let data = defaults.data(forKey: Self.legacyStorageKey(action)) {
+                // 1 つだけ保存していた頃の形式。空の Data は「なし」
+                if let combo = try? JSONDecoder().decode(KeyCombo.self, from: data) {
+                    combos[action] = [combo]
+                } else {
+                    combos[action] = []
+                }
+            } else {
+                combos[action] = action.defaultCombos
             }
         }
     }
+
+    private static func storageKey(_ action: HotkeyAction) -> String { "hotkeys.\(action.rawValue)" }
+    private static func legacyStorageKey(_ action: HotkeyAction) -> String { "hotkey.\(action.rawValue)" }
 
     func start() {
         installHandlerIfNeeded()
         for action in HotkeyAction.allCases { register(action) }
     }
 
-    /// nil を渡すとショートカットを外す。
-    func setCombo(_ combo: KeyCombo?, for action: HotkeyAction) {
-        unregister(action)
-        combos[action] = combo
-        if let combo, let data = try? JSONEncoder().encode(combo) {
-            UserDefaults.standard.set(data, forKey: "hotkey.\(action.rawValue)")
-        } else {
-            UserDefaults.standard.set(Data(), forKey: "hotkey.\(action.rawValue)")
+    /// ショートカットを追加する。ほかのアクションに同じものがあればそちらから外す。
+    func addCombo(_ combo: KeyCombo, for action: HotkeyAction) {
+        for other in HotkeyAction.allCases where other != action {
+            if let list = combos[other], list.contains(combo) {
+                setCombos(list.filter { $0 != combo }, for: other)
+            }
         }
+        let list = combos[action] ?? []
+        guard !list.contains(combo) else { return }
+        setCombos(list + [combo], for: action)
+    }
+
+    func removeCombo(_ combo: KeyCombo, for action: HotkeyAction) {
+        setCombos((combos[action] ?? []).filter { $0 != combo }, for: action)
+    }
+
+    func resetToDefault(_ action: HotkeyAction) {
+        for combo in action.defaultCombos { addCombo(combo, for: action) }
+        setCombos(action.defaultCombos, for: action)
+    }
+
+    private func setCombos(_ list: [KeyCombo], for action: HotkeyAction) {
+        unregister(action)
+        combos[action] = list
+        if let data = try? JSONEncoder().encode(list) {
+            UserDefaults.standard.set(data, forKey: Self.storageKey(action))
+        }
+        UserDefaults.standard.removeObject(forKey: Self.legacyStorageKey(action))
         register(action)
     }
 
@@ -149,7 +184,7 @@ final class HotkeyManager {
             self.escapeRef = nil
         }
         guard enabled else { return }
-        let id = EventHotKeyID(signature: signature, id: 100)
+        let id = EventHotKeyID(signature: signature, id: Self.escapeID)
         var ref: EventHotKeyRef?
         if RegisterEventHotKey(UInt32(kVK_Escape), 0, id, GetApplicationEventTarget(), 0, &ref) == noErr {
             escapeRef = ref
@@ -157,21 +192,26 @@ final class HotkeyManager {
     }
 
     private func register(_ action: HotkeyAction) {
-        failedActions.remove(action)
-        guard let combo = combos[action] else { return }
-        let id = EventHotKeyID(signature: signature, id: UInt32(HotkeyAction.allCases.firstIndex(of: action)! + 1))
-        var ref: EventHotKeyRef?
-        let status = RegisterEventHotKey(combo.keyCode, combo.carbonModifiers, id,
-                                         GetApplicationEventTarget(), 0, &ref)
-        if status == noErr, let ref {
-            refs[action] = ref
-        } else {
-            failedActions.insert(action)
+        unregister(action)
+        failedCombos[action] = nil
+        let actionIndex = UInt32(HotkeyAction.allCases.firstIndex(of: action)!)
+        var failed = Set<KeyCombo>()
+        for (slot, combo) in (combos[action] ?? []).enumerated() {
+            let id = EventHotKeyID(signature: signature, id: 1000 + actionIndex * 100 + UInt32(slot))
+            var ref: EventHotKeyRef?
+            let status = RegisterEventHotKey(combo.keyCode, combo.carbonModifiers, id,
+                                             GetApplicationEventTarget(), 0, &ref)
+            if status == noErr, let ref {
+                refs[action, default: []].append(ref)
+            } else {
+                failed.insert(combo)
+            }
         }
+        if !failed.isEmpty { failedCombos[action] = failed }
     }
 
     private func unregister(_ action: HotkeyAction) {
-        if let ref = refs.removeValue(forKey: action) {
+        for ref in refs.removeValue(forKey: action) ?? [] {
             UnregisterEventHotKey(ref)
         }
     }
@@ -183,11 +223,12 @@ final class HotkeyManager {
             var hotKeyID = EventHotKeyID()
             GetEventParameter(event, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID),
                               nil, MemoryLayout<EventHotKeyID>.size, nil, &hotKeyID)
-            if hotKeyID.id == 100 {
+            if hotKeyID.id == HotkeyManager.escapeID {
                 MainActor.assumeIsolated { HotkeyManager.shared.escapeHandler?() }
                 return noErr
             }
-            let index = Int(hotKeyID.id) - 1
+            guard hotKeyID.id >= 1000 else { return noErr }
+            let index = Int((hotKeyID.id - 1000) / 100)
             guard HotkeyAction.allCases.indices.contains(index) else { return noErr }
             let action = HotkeyAction.allCases[index]
             MainActor.assumeIsolated {

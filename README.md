@@ -16,7 +16,7 @@ https://github.com/user-attachments/assets/7cddf61a-dd6d-4e95-b5dd-469156826ebf
 - **Modern formats** — save images as WebP, PNG, or JPEG, and videos as WebM, MP4, or MOV
 - **Full screen, area, or window** — press Space during area selection to pick a window, with its shadow
 - **Screen recording overlays** — show mouse clicks as ripples, and optionally show pressed keys
-- **Custom shortcuts** — change or remove every global shortcut
+- **Custom shortcuts** — change, add, or remove global shortcuts, including the Print Screen key
 - **Eight languages** — English, Japanese, Simplified Chinese, Traditional Chinese, Korean, Spanish, German, and French
 
 <table>
@@ -57,7 +57,7 @@ PrintScreen lives in the menu bar. Use its menu or these default shortcuts:
 | Shortcut | Action |
 |---|---|
 | `⌘⇧3` | Capture full screen |
-| `⌘⇧4` | Capture area (press `Space` to select a window) |
+| `⌘⇧4` or `Print Screen` | Capture area (press `Space` to select a window) |
 | `⌘⇧5` | Record area, or stop recording |
 | `Esc` | Cancel selection or recording |
 

@@ -56,12 +56,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private func addActionItem(_ title: String, _ action: HotkeyAction) {
         let item = addItem(title, #selector(performAction(_:)))
         item.representedObject = action.rawValue
-        if let combo = HotkeyManager.shared.combos[action] {
-            let name = KeyCombo.keyName(for: combo.keyCode)
-            if name.count == 1 {
-                item.keyEquivalent = name.lowercased()
-                item.keyEquivalentModifierMask = combo.modifierFlags
-            }
+        // メニューに出せるのは 1 文字のキーだけなので、最初に見つかったものを出す
+        if let combo = HotkeyManager.shared.combos[action]?.first(where: { KeyCombo.keyName(for: $0.keyCode).count == 1 }) {
+            item.keyEquivalent = KeyCombo.keyName(for: combo.keyCode).lowercased()
+            item.keyEquivalentModifierMask = combo.modifierFlags
         }
     }
 

@@ -222,14 +222,7 @@ private struct ShortcutSettingsView: View {
             Section {
                 ForEach(HotkeyAction.allCases) { action in
                     LabeledContent(action.title) {
-                        VStack(alignment: .trailing, spacing: 2) {
-                            ShortcutRecorder(action: action)
-                            if hotkeys.failedActions.contains(action) {
-                                Text("Already in use by another app")
-                                    .font(.caption)
-                                    .foregroundStyle(.red)
-                            }
-                        }
+                        ShortcutList(action: action)
                     }
                 }
             } footer: {
@@ -257,8 +250,8 @@ private struct ShortcutSettingsView: View {
     }
 }
 
-/// クリックしてからキーを押すとショートカットを記録するボタン。
-private struct ShortcutRecorder: View {
+/// アクションに割り当てたショートカットの一覧と、追加・削除・リセットのボタン。
+private struct ShortcutList: View {
     let action: HotkeyAction
     @State private var isRecording = false
     @State private var monitor: Any?
@@ -269,28 +262,50 @@ private struct ShortcutRecorder: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
-            Button {
-                isRecording ? stopRecording() : startRecording()
-            } label: {
-                Text(isRecording ? String(localized: "Press keys…") : (hotkeys.combos[action]?.displayString ?? String(localized: "None")))
-                    .frame(minWidth: 140)
+        let combos = hotkeys.combos[action] ?? []
+        VStack(alignment: .trailing, spacing: 4) {
+            if combos.isEmpty {
+                Text("None")
+                    .foregroundStyle(.secondary)
             }
-            Button {
-                hotkeys.setCombo(nil, for: action)
-            } label: {
-                Image(systemName: "xmark.circle.fill")
+            ForEach(combos, id: \.self) { combo in
+                VStack(alignment: .trailing, spacing: 2) {
+                    HStack(spacing: 4) {
+                        Text(combo.displayString)
+                            .monospacedDigit()
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(.quaternary, in: RoundedRectangle(cornerRadius: 5))
+                        Button {
+                            hotkeys.removeCombo(combo, for: action)
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                        }
+                        .buttonStyle(.borderless)
+                        .help("Remove Shortcut")
+                    }
+                    if hotkeys.failedCombos[action]?.contains(combo) == true {
+                        Text("Already in use by another app")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+                }
             }
-            .buttonStyle(.borderless)
-            .help("Remove Shortcut")
-            .disabled(hotkeys.combos[action] == nil)
-            Button {
-                hotkeys.setCombo(action.defaultCombo, for: action)
-            } label: {
-                Image(systemName: "arrow.counterclockwise")
+            HStack(spacing: 4) {
+                Button {
+                    isRecording ? stopRecording() : startRecording()
+                } label: {
+                    Text(isRecording ? String(localized: "Press keys…") : String(localized: "Add Shortcut"))
+                        .frame(minWidth: 140)
+                }
+                Button {
+                    hotkeys.resetToDefault(action)
+                } label: {
+                    Image(systemName: "arrow.counterclockwise")
+                }
+                .buttonStyle(.borderless)
+                .help("Reset to default (\(action.defaultCombos.map(\.displayString).joined(separator: ", ")))")
             }
-            .buttonStyle(.borderless)
-            .help("Reset to default (\(action.defaultCombo.displayString))")
         }
         .onDisappear { stopRecording() }
     }
@@ -308,7 +323,7 @@ private struct ShortcutRecorder: View {
             let isFunctionKey = (122...135).contains(Int(event.keyCode)) || [96, 97, 98, 99, 100, 101, 103, 105, 106, 107, 109, 111, 113, 118, 120].contains(Int(event.keyCode))
             guard !mods.isEmpty || isFunctionKey else { return nil }
             stopRecording()
-            hotkeys.setCombo(KeyCombo(keyCode: UInt32(event.keyCode), modifiers: mods.rawValue), for: action)
+            hotkeys.addCombo(KeyCombo(keyCode: UInt32(event.keyCode), modifiers: mods.rawValue), for: action)
             return nil
         }
     }
