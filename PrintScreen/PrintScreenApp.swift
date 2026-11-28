@@ -21,6 +21,8 @@ struct PrintScreenApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // 以前から使っているかを、メニューバーのアイコンなどが設定を書き込む前に判定させる
+        _ = HotkeyManager.shared
         // 古いインスタンスが残るとアイコンが増え、ショートカットも奪われるので終了させる
         let others = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "")
             .filter { $0 != NSRunningApplication.current }

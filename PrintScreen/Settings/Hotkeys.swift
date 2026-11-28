@@ -81,14 +81,31 @@ enum HotkeyAction: String, CaseIterable, Identifiable {
         }
     }
 
-    var defaultCombos: [KeyCombo] {
-        let cmdShift = NSEvent.ModifierFlags([.command, .shift]).rawValue
+    private var digitKeyCode: UInt32 {
         switch self {
-        case .captureFullScreen: return [KeyCombo(keyCode: UInt32(kVK_ANSI_3), modifiers: cmdShift)]
-        case .captureArea: return [KeyCombo(keyCode: UInt32(kVK_ANSI_4), modifiers: cmdShift),
-                                   KeyCombo(keyCode: UInt32(kVK_F13), modifiers: 0)]
-        case .recordArea: return [KeyCombo(keyCode: UInt32(kVK_ANSI_5), modifiers: cmdShift)]
+        case .captureFullScreen: UInt32(kVK_ANSI_3)
+        case .captureArea: UInt32(kVK_ANSI_4)
+        case .recordArea: UInt32(kVK_ANSI_5)
         }
+    }
+
+    /// PC 用キーボードの Print Screen キー（Mac では F13 として届く）。
+    static let printScreen = KeyCombo(keyCode: UInt32(kVK_F13), modifiers: 0)
+
+    /// 既定は macOS のスクリーンショットと重ならない ⌃⌘3 / ⌃⌘4 / ⌃⌘5。
+    var defaultCombos: [KeyCombo] {
+        let combo = KeyCombo(keyCode: digitKeyCode, modifiers: NSEvent.ModifierFlags([.command, .control]).rawValue)
+        return self == .captureArea ? [combo, Self.printScreen] : [combo]
+    }
+
+    /// macOS のスクリーンショットと同じ ⇧⌘3 / ⇧⌘4 / ⇧⌘5。
+    var macOSStyleCombo: KeyCombo {
+        KeyCombo(keyCode: digitKeyCode, modifiers: NSEvent.ModifierFlags([.command, .shift]).rawValue)
+    }
+
+    /// 既定が ⇧⌘ だった頃からの利用者に使う既定値。何もしないうちにショートカットが変わらないようにする。
+    var legacyDefaultCombos: [KeyCombo] {
+        self == .captureArea ? [macOSStyleCombo, Self.printScreen] : [macOSStyleCombo]
     }
 }
 
@@ -100,6 +117,8 @@ final class HotkeyManager {
     private(set) var combos: [HotkeyAction: [KeyCombo]] = [:]
     /// 登録に失敗したショートカット（ほかのアプリやシステムが使っている）。
     private(set) var failedCombos: [HotkeyAction: Set<KeyCombo>] = [:]
+    /// macOS 自身のショートカット（スクリーンショットなど）として有効になっているもの。重なると両方が動く。
+    private(set) var systemCombos: Set<KeyCombo> = []
 
     @ObservationIgnored var handler: ((HotkeyAction) -> Void)?
     @ObservationIgnored var escapeHandler: (() -> Void)?
@@ -112,6 +131,7 @@ final class HotkeyManager {
 
     private init() {
         let defaults = UserDefaults.standard
+        let isExistingInstall = Self.isExistingInstall
         for action in HotkeyAction.allCases {
             if let data = defaults.data(forKey: Self.storageKey(action)),
                let list = try? JSONDecoder().decode([KeyCombo].self, from: data) {
@@ -123,10 +143,23 @@ final class HotkeyManager {
                 } else {
                     combos[action] = []
                 }
+            } else if isExistingInstall {
+                // 既定を変える前から使っている人は、今まで通り ⇧⌘ のまま使えるように保存しておく
+                setCombos(action.legacyDefaultCombos, for: action, register: false)
             } else {
                 combos[action] = action.defaultCombos
             }
         }
+        refreshSystemCombos()
+    }
+
+    /// 以前のバージョンを使ったことがあるか。アプリの設定かメニューバーのアイコンの状態が保存されていれば、使ったことがある。
+    private static var isExistingInstall: Bool {
+        guard let id = Bundle.main.bundleIdentifier,
+              let domain = UserDefaults.standard.persistentDomain(forName: id) else { return false }
+        let appKeys: Set<String> = ["saveDirectory", "imageFormat", "imageQuality", "videoFormat", "showClicks",
+                                    "showKeystrokes", "showMenuBarIcon", "revealRecordingInFinder"]
+        return domain.keys.contains { appKeys.contains($0) || $0.hasPrefix("NSStatusItem") || $0.hasPrefix("hotkey") }
     }
 
     private static func storageKey(_ action: HotkeyAction) -> String { "hotkeys.\(action.rawValue)" }
@@ -153,19 +186,67 @@ final class HotkeyManager {
         setCombos((combos[action] ?? []).filter { $0 != combo }, for: action)
     }
 
+    /// すべてのアクションが ⇧⌘3 / ⇧⌘4 / ⇧⌘5 を使っているか。
+    var usesMacOSStyleCombos: Bool {
+        HotkeyAction.allCases.allSatisfy { combos[$0]?.contains($0.macOSStyleCombo) == true }
+    }
+
+    /// macOS のスクリーンショットのショートカットを置き換える。既定の ⌃⌘ のショートカットは ⇧⌘ に差し替える。
+    func useMacOSStyleCombos() {
+        for action in HotkeyAction.allCases {
+            let defaultCombo = action.defaultCombos[0]
+            var list = combos[action] ?? []
+            if let index = list.firstIndex(of: defaultCombo) {
+                list[index] = action.macOSStyleCombo
+            } else if !list.contains(action.macOSStyleCombo) {
+                list.insert(action.macOSStyleCombo, at: 0)
+            }
+            setCombos(list, for: action)
+        }
+        refreshSystemCombos()
+    }
+
+    /// macOS 自身のショートカットと重なっているか。
+    func conflictsWithSystem(_ combo: KeyCombo) -> Bool {
+        systemCombos.contains(combo)
+    }
+
+    var hasSystemConflicts: Bool {
+        combos.values.contains { $0.contains { systemCombos.contains($0) } }
+    }
+
+    /// macOS のショートカットの有効・無効を読み直す。システム設定で変えたあとに呼ぶ。
+    func refreshSystemCombos() {
+        var array: Unmanaged<CFArray>?
+        guard CopySymbolicHotKeys(&array) == noErr,
+              let list = array?.takeRetainedValue() as? [[String: Any]] else { return }
+        var result = Set<KeyCombo>()
+        for item in list where item["kHISymbolicHotKeyEnabled"] as? Bool == true {
+            guard let code = item["kHISymbolicHotKeyCode"] as? Int,
+                  let carbon = item["kHISymbolicHotKeyModifiers"] as? Int else { continue }
+            var flags: NSEvent.ModifierFlags = []
+            if carbon & cmdKey != 0 { flags.insert(.command) }
+            if carbon & shiftKey != 0 { flags.insert(.shift) }
+            if carbon & optionKey != 0 { flags.insert(.option) }
+            if carbon & controlKey != 0 { flags.insert(.control) }
+            result.insert(KeyCombo(keyCode: UInt32(code), modifiers: flags.rawValue))
+        }
+        if result != systemCombos { systemCombos = result }
+    }
+
     func resetToDefault(_ action: HotkeyAction) {
         for combo in action.defaultCombos { addCombo(combo, for: action) }
         setCombos(action.defaultCombos, for: action)
     }
 
-    private func setCombos(_ list: [KeyCombo], for action: HotkeyAction) {
-        unregister(action)
+    private func setCombos(_ list: [KeyCombo], for action: HotkeyAction, register shouldRegister: Bool = true) {
+        if shouldRegister { unregister(action) }
         combos[action] = list
         if let data = try? JSONEncoder().encode(list) {
             UserDefaults.standard.set(data, forKey: Self.storageKey(action))
         }
         UserDefaults.standard.removeObject(forKey: Self.legacyStorageKey(action))
-        register(action)
+        if shouldRegister { register(action) }
     }
 
     /// 録画ボタンの記録中などに、一時的にすべて外す。

@@ -52,10 +52,34 @@
     },
     "About": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Über"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca de"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À propos"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
             "value": "このアプリについて"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "정보"
           }
         },
         "zh-Hans": {
@@ -68,30 +92,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "關於"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "정보"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acerca de"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Über"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "À propos"
           }
         }
       }
@@ -509,55 +509,6 @@
           }
         }
       }
-    },
-    "Print Screen": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Druck"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impr Pant"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impr. écran"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Print Screen"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Print Screen"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Print Screen"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Print Screen"
-          }
-        }
-      }
-    },
-    "brew install ffmpeg": {
-      "shouldTranslate": false
     },
     "Buy me a coffee": {
       "shouldTranslate": false
@@ -1804,98 +1755,6 @@
         }
       }
     },
-    "ffmpeg conversion failed\n%@": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ffmpeg-Konvertierung fehlgeschlagen\n%@"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Error de conversión de ffmpeg\n%@"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Échec de la conversion ffmpeg\n%@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ffmpeg での変換に失敗しました\n%@"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ffmpeg 변환에 실패했습니다\n%@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ffmpeg 转换失败\n%@"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ffmpeg 轉換失敗\n%@"
-          }
-        }
-      }
-    },
-    "ffmpeg not found": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ffmpeg nicht gefunden"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No se encontró ffmpeg"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ffmpeg introuvable"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ffmpeg が見つかりません"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ffmpeg를 찾을 수 없습니다"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "找不到 ffmpeg"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "找不到 ffmpeg"
-          }
-        }
-      }
-    },
     "Fill": {
       "localizations": {
         "de": {
@@ -2451,9 +2310,6 @@
         }
       }
     },
-    "morishin": {
-      "shouldTranslate": false
-    },
     "Mosaic": {
       "localizations": {
         "de": {
@@ -2542,52 +2398,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "無"
-          }
-        }
-      }
-    },
-    "Open in Finder": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Im Finder öffnen"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Abrir en el Finder"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ouvrir dans le Finder"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Finder で開く"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Finder에서 열기"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在访达中打开"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在 Finder 中打開"
           }
         }
       }
@@ -2726,6 +2536,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "打開系統設定"
+          }
+        }
+      }
+    },
+    "Open in Finder": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Im Finder öffnen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir en el Finder"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir dans le Finder"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder で開く"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder에서 열기"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在访达中打开"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Finder 中打開"
           }
         }
       }
@@ -3048,6 +2904,98 @@
           "stringUnit": {
             "state": "translated",
             "value": "請按鍵…"
+          }
+        }
+      }
+    },
+    "Pressing these shortcuts also runs the macOS screenshot. Turn off the macOS shortcuts in System Settings › Keyboard › Keyboard Shortcuts › Screenshots.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Kurzbefehle lösen auch das Bildschirmfoto von macOS aus. Deaktiviere die macOS-Kurzbefehle unter Systemeinstellungen › Tastatur › Tastaturkurzbefehle › Bildschirmfotos."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estas funciones rápidas también activan la captura de pantalla de macOS. Desactiva las funciones rápidas de macOS en Ajustes del Sistema › Teclado › Funciones rápidas de teclado › Capturas de pantalla."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ces raccourcis déclenchent aussi la capture d'écran de macOS. Désactivez les raccourcis de macOS dans Réglages Système › Clavier › Raccourcis clavier › Captures d'écran."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "これらのショートカットを押すと、macOS 標準のスクリーンショットも同時に動きます。システム設定 › キーボード › キーボードショートカット › スクリーンショット で macOS 標準のショートカットをオフにしてください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 단축키를 누르면 macOS 스크린샷도 함께 실행됩니다. 시스템 설정 › 키보드 › 키보드 단축키 › 스크린샷에서 macOS 단축키를 끄세요."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按下这些快捷键时，macOS 截屏也会同时运行。请在“系统设置 › 键盘 › 键盘快捷键 › 截屏”中关闭 macOS 的快捷键。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按下這些快速鍵時，macOS 截圖也會同時執行。請在「系統設定 › 鍵盤 › 鍵盤快速鍵 › 截圖」中關閉 macOS 的快速鍵。"
+          }
+        }
+      }
+    },
+    "Print Screen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Druck"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impr Pant"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impr. écran"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print Screen"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print Screen"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print Screen"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Print Screen"
           }
         }
       }
@@ -3561,6 +3509,52 @@
         }
       }
     },
+    "Replace macOS Screenshot Shortcuts": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bildschirmfoto-Kurzbefehle von macOS ersetzen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reemplazar las funciones rápidas de captura de macOS"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remplacer les raccourcis de capture de macOS"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS のスクリーンショットのショートカットを置き換える"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS 스크린샷 단축키 대체"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "替换 macOS 截屏快捷键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取代 macOS 截圖快速鍵"
+          }
+        }
+      }
+    },
     "Reset to default (%@)": {
       "localizations": {
         "de": {
@@ -3745,52 +3739,6 @@
         }
       }
     },
-    "Save and Close (⌘S)": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sichern und schließen (⌘S)"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Guardar y cerrar (⌘S)"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enregistrer et fermer (⌘S)"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "保存して閉じる（⌘S）"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "저장하고 닫기(⌘S)"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "存储并关闭（⌘S）"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "儲存並關閉（⌘S）"
-          }
-        }
-      }
-    },
     "Save Location": {
       "localizations": {
         "de": {
@@ -3833,6 +3781,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "儲存位置"
+          }
+        }
+      }
+    },
+    "Save and Close (⌘S)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sichern und schließen (⌘S)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar y cerrar (⌘S)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer et fermer (⌘S)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存して閉じる（⌘S）"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장하고 닫기(⌘S)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "存储并关闭（⌘S）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "儲存並關閉（⌘S）"
           }
         }
       }
@@ -4251,98 +4245,6 @@
         }
       }
     },
-    "Show in Finder": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Im Finder zeigen"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mostrar en el Finder"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Afficher dans le Finder"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Finder で表示"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Finder에서 보기"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在访达中显示"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在 Finder 中顯示"
-          }
-        }
-      }
-    },
-    "Show in Menu Bar": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "In der Menüleiste anzeigen"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mostrar en la barra de menús"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Afficher dans la barre des menus"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "メニューバーに表示する"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "메뉴 막대에 표시"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在菜单栏中显示"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在選單列中顯示"
-          }
-        }
-      }
-    },
     "Show Mouse Clicks": {
       "localizations": {
         "de": {
@@ -4481,6 +4383,98 @@
         }
       }
     },
+    "Show in Finder": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Im Finder zeigen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar en el Finder"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher dans le Finder"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder で表示"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder에서 보기"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在访达中显示"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Finder 中顯示"
+          }
+        }
+      }
+    },
+    "Show in Menu Bar": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In der Menüleiste anzeigen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar en la barra de menús"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher dans la barre des menus"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "メニューバーに表示する"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메뉴 막대에 표시"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在菜单栏中显示"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在選單列中顯示"
+          }
+        }
+      }
+    },
     "Showing keys requires Accessibility permission.": {
       "localizations": {
         "de": {
@@ -4615,6 +4609,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "實線 / 虛線"
+          }
+        }
+      }
+    },
+    "Some Shortcuts Are Used by macOS": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einige Kurzbefehle werden von macOS verwendet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS usa algunas funciones rápidas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certains raccourcis sont utilisés par macOS"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS と重なっているショートカットがあります"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS에서 사용 중인 단축키가 있습니다"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "部分快捷键已被 macOS 使用"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "部分快速鍵已被 macOS 使用"
           }
         }
       }
@@ -4897,10 +4937,34 @@
     },
     "Third-Party Notices": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hinweise zu Drittanbietern"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avisos de terceros"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mentions de tiers"
+          }
+        },
         "ja": {
           "stringUnit": {
             "state": "translated",
             "value": "サードパーティのライセンス"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "타사 고지"
           }
         },
         "zh-Hans": {
@@ -4913,76 +4977,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "第三方聲明"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "타사 고지"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avisos de terceros"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hinweise zu Drittanbietern"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mentions de tiers"
-          }
-        }
-      }
-    },
-    "To use ⌘⇧3 / ⌘⇧4 / ⌘⇧5, turn off the macOS shortcuts in System Settings › Keyboard › Keyboard Shortcuts › Screenshots.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Um ⌘⇧3 / ⌘⇧4 / ⌘⇧5 zu verwenden, deaktiviere die macOS-Kurzbefehle unter Systemeinstellungen › Tastatur › Tastaturkurzbefehle › Bildschirmfotos."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Para usar ⌘⇧3 / ⌘⇧4 / ⌘⇧5, desactiva las funciones rápidas de macOS en Ajustes del Sistema › Teclado › Funciones rápidas de teclado › Capturas de pantalla."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pour utiliser ⌘⇧3 / ⌘⇧4 / ⌘⇧5, désactivez les raccourcis de macOS dans Réglages Système › Clavier › Raccourcis clavier › Captures d'écran."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌘⇧3 / ⌘⇧4 / ⌘⇧5 を使うには、システム設定 › キーボード › キーボードショートカット › スクリーンショット で macOS 標準のショートカットをオフにしてください。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌘⇧3 / ⌘⇧4 / ⌘⇧5를 사용하려면 시스템 설정 › 키보드 › 키보드 단축키 › 스크린샷에서 macOS 단축키를 끄세요."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "要使用 ⌘⇧3 / ⌘⇧4 / ⌘⇧5，请在“系统设置 › 键盘 › 键盘快捷键 › 截屏”中关闭 macOS 的快捷键。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "若要使用 ⌘⇧3 / ⌘⇧4 / ⌘⇧5，請在「系統設定 › 鍵盤 › 鍵盤快速鍵 › 截圖」中關閉 macOS 的快速鍵。"
           }
         }
       }
@@ -5167,6 +5161,98 @@
           "stringUnit": {
             "state": "translated",
             "value": "已是最新版本"
+          }
+        }
+      }
+    },
+    "Use ⌘⇧3 / ⌘⇧4 / ⌘⇧5, the macOS screenshot shortcuts, for PrintScreen instead.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verwende ⌘⇧3 / ⌘⇧4 / ⌘⇧5, die Bildschirmfoto-Kurzbefehle von macOS, stattdessen für PrintScreen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa ⌘⇧3 / ⌘⇧4 / ⌘⇧5, las funciones rápidas de captura de pantalla de macOS, para PrintScreen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utilisez ⌘⇧3 / ⌘⇧4 / ⌘⇧5, les raccourcis de capture d'écran de macOS, pour PrintScreen."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS 標準のスクリーンショットのショートカット ⌘⇧3 / ⌘⇧4 / ⌘⇧5 を、PrintScreen で使えます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS 스크린샷 단축키인 ⌘⇧3 / ⌘⇧4 / ⌘⇧5를 PrintScreen에서 대신 사용합니다."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "改为在 PrintScreen 中使用 macOS 截屏快捷键 ⌘⇧3 / ⌘⇧4 / ⌘⇧5。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "改為在 PrintScreen 中使用 macOS 截圖快速鍵 ⌘⇧3 / ⌘⇧4 / ⌘⇧5。"
+          }
+        }
+      }
+    },
+    "Used by macOS": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Von macOS verwendet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En uso por macOS"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utilisé par macOS"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS が使用中"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS에서 사용 중"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已被 macOS 使用"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已被 macOS 使用"
           }
         }
       }
@@ -5492,6 +5578,104 @@
           }
         }
       }
+    },
+    "brew install ffmpeg": {
+      "shouldTranslate": false
+    },
+    "ffmpeg conversion failed\n%@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ffmpeg-Konvertierung fehlgeschlagen\n%@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error de conversión de ffmpeg\n%@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Échec de la conversion ffmpeg\n%@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ffmpeg での変換に失敗しました\n%@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ffmpeg 변환에 실패했습니다\n%@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ffmpeg 转换失败\n%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ffmpeg 轉換失敗\n%@"
+          }
+        }
+      }
+    },
+    "ffmpeg not found": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ffmpeg nicht gefunden"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se encontró ffmpeg"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ffmpeg introuvable"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ffmpeg が見つかりません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ffmpeg를 찾을 수 없습니다"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "找不到 ffmpeg"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "找不到 ffmpeg"
+          }
+        }
+      }
+    },
+    "morishin": {
+      "shouldTranslate": false
     }
   },
   "version": "1.1"

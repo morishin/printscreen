@@ -260,24 +260,62 @@ private struct ShortcutSettingsView: View {
     private var hotkeys = HotkeyManager.shared
 
     var body: some View {
+        // 画像を小さくしないよう、バナーはフォームの中に入れて一緒にスクロールさせる
         Form {
+            if hotkeys.hasSystemConflicts {
+                // 行にすると背景がフォームの色になるので、ヘッダーとして出して赤い背景を保つ
+                Section {} header: {
+                    SystemShortcutConflictBanner()
+                }
+            }
+            if !hotkeys.usesMacOSStyleCombos {
+                Section {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Use ⌘⇧3 / ⌘⇧4 / ⌘⇧5, the macOS screenshot shortcuts, for PrintScreen instead.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button("Replace macOS Screenshot Shortcuts") { hotkeys.useMacOSStyleCombos() }
+                    }
+                }
+            }
             Section {
                 ForEach(HotkeyAction.allCases) { action in
                     LabeledContent(action.title) {
                         ShortcutList(action: action)
                     }
                 }
-            } footer: {
-                Text("To use ⌘⇧3 / ⌘⇧4 / ⌘⇧5, turn off the macOS shortcuts in System Settings › Keyboard › Keyboard Shortcuts › Screenshots.")
+            }
+        }
+        .formStyle(.grouped)
+        .onAppear { hotkeys.refreshSystemCombos() }
+        // システム設定で macOS のショートカットを切って戻ってきたときに確かめ直す
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            hotkeys.refreshSystemCombos()
+        }
+    }
+}
+
+/// macOS のショートカットと重なっているときに、ショートカットのタブの先頭に出すバナー。
+private struct SystemShortcutConflictBanner: View {
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.title2)
+                .foregroundStyle(.red)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Some Shortcuts Are Used by macOS")
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                Text("Pressing these shortcuts also runs the macOS screenshot. Turn off the macOS shortcuts in System Settings › Keyboard › Keyboard Shortcuts › Screenshots.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
-            }
-            Section {
+                    .fixedSize(horizontal: false, vertical: true)
                 Button("Open Keyboard Shortcuts Settings") {
                     // ?Shortcuts でキーボードショートカットのシートまで開く。スクリーンショットの項目は選べない
                     NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension?Shortcuts")!)
                 }
-            } footer: {
+                .controlSize(.small)
                 // 言語ごとの画像は tools/media/system_shortcuts.sh で撮り直す
                 Image("SystemScreenshotShortcuts")
                     .resizable()
@@ -287,8 +325,10 @@ private struct ShortcutSettingsView: View {
                     .padding(.top, 4)
                     .accessibilityHidden(true)
             }
+            Spacer(minLength: 0)
         }
-        .formStyle(.grouped)
+        .padding(12)
+        .background(.red.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
     }
 }
 
@@ -326,7 +366,11 @@ private struct ShortcutList: View {
                         .buttonStyle(.borderless)
                         .help("Remove Shortcut")
                     }
-                    if hotkeys.failedCombos[action]?.contains(combo) == true {
+                    if hotkeys.conflictsWithSystem(combo) {
+                        Text("Used by macOS")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    } else if hotkeys.failedCombos[action]?.contains(combo) == true {
                         Text("Already in use by another app")
                             .font(.caption)
                             .foregroundStyle(.red)
